@@ -5,8 +5,8 @@ from tkinter import filedialog
 from pathlib import Path
 from PIL import Image
 
-ctk.set_appearance_mode("Light")  # Modes: "System" (standard), "Dark", "Light"
-#ctk.set_default_color_theme(os.path.abspath("../static/theme.json"))
+# ctk.set_appearance_mode("Light")  # Modes: "System" (standard), "Dark", "Light"
+# ctk.set_default_color_theme(os.path.abspath("../static/theme.json"))
 
 class OutputTopLevel(ctk.CTkToplevel):
     """
@@ -16,7 +16,7 @@ class OutputTopLevel(ctk.CTkToplevel):
         super().__init__(*args, **kwargs)
         
         self.title("Settings")
-        self.geometry("300x200+820+300")
+        self.geometry("300x250+820+300")
         self.resizable(0,0)
         self.protocol(
             "WM_DELETE_WINDOW", self.on_closing
@@ -27,7 +27,6 @@ class OutputTopLevel(ctk.CTkToplevel):
         self.setting_frame = ctk.CTkFrame(
             master=self,
             border_width=1,
-            border_color="gray70",
             corner_radius=0)
         self.setting_frame.grid(row=0, column=0, pady=(1, 10))
         
@@ -43,8 +42,7 @@ class OutputTopLevel(ctk.CTkToplevel):
         # directory display label
         self.output_dis_label = ctk.CTkLabel(
             master=self.setting_frame,
-            text=self.master.output_dir,
-            fg_color="gray80")
+            text=self.master.output_dir)
         self.output_dis_label.grid(row=1, padx=20, pady=5, sticky="we")
         
          # Choose button
@@ -72,8 +70,29 @@ class OutputTopLevel(ctk.CTkToplevel):
             corner_radius=0,
             width=150,
             command=self.set_format_choice)
-        self.format_menu.grid(row=5, column=0, padx=20, pady=(10,10), sticky="")   
-       
+        self.format_menu.grid(row=5, column=0, padx=20, pady=(10,10), sticky="")
+        
+        # ============ DARK MODE ============ #
+        self.dark_mode = ctk.CTkSwitch(
+            master=self.setting_frame,
+            text="Dark Mode",
+            onvalue="dark",
+            offvalue="light",
+            corner_radius=2)
+        self.dark_mode.configure(command=self.switch_event)
+        self.dark_mode.select()
+        self.dark_mode.grid(row=6, column=0, padx=20, pady=(10,10))
+        
+    
+    def switch_event(self):
+        """
+            Define apparence mode dark or light
+        """
+        print(f"switch mode : {self.dark_mode.get()}")
+        if self.dark_mode.get() == "dark":
+            ctk.set_appearance_mode("Dark")
+        else:
+            ctk.set_appearance_mode("Light")
        
     def set_output_dir(self):
         output_dir = filedialog.askdirectory(initialdir = "/",title = "Open file")
@@ -150,7 +169,6 @@ class DownloadItemFrame(ctk.CTkFrame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.configure(border_width=1)
-        self.configure(border_color="gray38")
                 
         # Title label
         self.yt_title = ctk.CTkLabel(master=self, text=f"[Insert file title here]")
@@ -170,7 +188,6 @@ class DownloadListFrame(ctk.CTkFrame):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.configure(fg_color="gray80")
         
         # ============ Current download
         self.current_dl = DownloadItemFrame(master=self, corner_radius=0)
@@ -192,22 +209,26 @@ class SettingsFrame(ctk.CTkFrame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
+        # 
+        self.org_label = ctk.CTkLabel(master=self, text="Powered by Lunar Lotus")
+        self.org_label.pack(side=tk.LEFT, padx=10)
+        
+        # settings button
         image = Image.open("../static/img/settings_icon.png")
         setting_icon = ctk.CTkImage(image)
         
-        # settings button
         self.setting_button = ctk.CTkButton(
             master=self, 
-            text="Settings", 
+            text="", 
             cursor="hand2", 
             border_width=0, 
             corner_radius=0,
             image=setting_icon,
-            compound=tk.LEFT, 
-            font=('Helvetica', 13, 'bold')
+            compound=tk.LEFT,
+            width=20
         )
         self.setting_button.configure(command=self.master.on_open)
-        self.setting_button.pack(side=tk.RIGHT, padx=5)
+        self.setting_button.pack(side=tk.RIGHT)
 
 class App(ctk.CTk):
     """
