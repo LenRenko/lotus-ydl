@@ -39,12 +39,12 @@ def set_options(dir: str) -> dict:
 
 
 def downloader(url: str):
-    yt_opt = set_options("~/Documents/Dev/projects/lotus-ydl/")
+    yt_opt = set_options("B:\Dev\Projetcs\lotus-ydl\output")
 
     try:
         with yt.YoutubeDL(yt_opt) as ydl:
             info = ydl.extract_info(url, download=False)
-            # ydl.download([url])
+            ydl.download([url])
             print(info.keys())
     except yt.utils.DownloadError:
         raise URLError
