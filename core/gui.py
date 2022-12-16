@@ -1,12 +1,11 @@
 import customtkinter as ctk
 import tkinter as tk
+import os
+import json
 
 from tkinter import filedialog
 from pathlib import Path
 from PIL import Image
-
-# ctk.set_appearance_mode("Light")  # Modes: "System" (standard), "Dark", "Light"
-# ctk.set_default_color_theme(os.path.abspath("../static/theme.json"))
 
 class OutputTopLevel(ctk.CTkToplevel):
     """
@@ -66,7 +65,7 @@ class OutputTopLevel(ctk.CTkToplevel):
 
         self.format_menu = ctk.CTkOptionMenu(
             master=self.setting_frame, 
-            values=[".mp3", ".mp4"],
+            values=["MP3", "MP4"],
             corner_radius=0,
             width=150,
             command=self.set_format_choice)
@@ -76,8 +75,8 @@ class OutputTopLevel(ctk.CTkToplevel):
         self.dark_mode = ctk.CTkSwitch(
             master=self.setting_frame,
             text="Dark Mode",
-            onvalue="dark",
-            offvalue="light",
+            onvalue="Dark",
+            offvalue="Light",
             corner_radius=2)
         self.dark_mode.configure(command=self.switch_event)
         self.dark_mode.select()
@@ -86,23 +85,24 @@ class OutputTopLevel(ctk.CTkToplevel):
     
     def switch_event(self):
         """
-            Define apparence mode dark or light
+            Define apparence mode dark or light and save it on config file
         """
-        print(f"switch mode : {self.dark_mode.get()}")
-        if self.dark_mode.get() == "dark":
+        if self.dark_mode.get() == "Dark":
             ctk.set_appearance_mode("Dark")
         else:
             ctk.set_appearance_mode("Light")
+        self.master.set_setting("light_mode", self.dark_mode.get())
        
     def set_output_dir(self):
         output_dir = filedialog.askdirectory(initialdir = "/",title = "Open file")
         if output_dir :
             self.master.output_dir = output_dir
             self.output_dis_label.configure(text=self.master.output_dir)
+            self.master.set_setting("output_dir", output_dir)
     
     def set_format_choice(self, choice):
-        print(f"Format Choose : {choice}")
         self.master.output_format = choice
+        self.master.set_setting("output_format", choice)
         
     def on_closing(self):
         self.withdraw()
@@ -134,16 +134,6 @@ class URLEntryFrame(ctk.CTkFrame):
             width=500, 
             corner_radius=0)
         self.url_entry.grid(row=0, columnspan=2, sticky="we", padx=(50,50), pady=5)
-        
-        # Add button
-        self.add_button = ctk.CTkButton(
-            master=self, 
-            text="Add", 
-            cursor="hand2", 
-            border_width=0, 
-            corner_radius=0,
-            font=('Helvetica', 13, 'bold'))
-        self.add_button.grid(row=1, column=0, sticky="e", padx=10, pady=(2,10))
         
         self.dl_button = ctk.CTkButton(
             master=self,
@@ -177,6 +167,7 @@ class DownloadItemFrame(ctk.CTkFrame):
         # progress bar
         self.progress_bar = ctk.CTkProgressBar(master=self, height=10, width=420, corner_radius=0)
         self.progress_bar.grid(row=1, column=0, padx=(10,0))
+        self.progress_bar.set(0)
         
         # percent label
         self.progress_percent = ctk.CTkLabel(master=self, text="[percentage here]")
@@ -227,8 +218,8 @@ class SettingsFrame(ctk.CTkFrame):
             compound=tk.LEFT,
             width=20
         )
-        self.setting_button.configure(command=self.master.on_open)
-        self.setting_button.pack(side=tk.RIGHT)
+        self.setting_button.configure(command=self.master.on_open_settings)
+        self.setting_button.pack(side=tk.RIGHT, padx=(0, 10))
 
 class App(ctk.CTk):
     """
@@ -240,9 +231,11 @@ class App(ctk.CTk):
     download_list = []
     output_format = "mp3"
     output_dir = str(Path.home())+"\download\\"
+    light_mode = "Light"
     
     def __init__(self):
         super().__init__()
+        self.init_settings()
         
         # ============ INIT APP =========== #
         self.title("Youtube Downloader by Lunar Lotus")
@@ -274,10 +267,34 @@ class App(ctk.CTk):
         self.bot_frame.grid(row=3, column=0, pady=2, sticky="we")
 
     
-    def on_open(self):
+    def on_open_settings(self):
         if self.output_window.state() == "withdrawn":
             self.output_window.deiconify()
             self.output_window.grab_set()
+            if self.light_mode == "Light":
+                self.output_window.dark_mode.deselect()
+            else:
+                self.output_window.dark_mode.select()
     
     def on_closing(self, event=0):
         self.destroy()
+
+    def init_settings(self):
+        with open('../static/config.json') as f:
+            data = json.load(f)
+            
+            self.output_format = data["output_format"]
+
+            if data["light_mode"]:
+                ctk.set_appearance_mode(data["light_mode"])
+                self.light_mode = data["light_mode"]
+            if data['output_dir']:
+                self.output_dir = data["output_dir"]
+            ctk.set_default_color_theme(os.path.abspath("../static/theme.json"))
+    
+    def set_setting(self, setting: str, value: str):
+        with open('../static/config.json') as f:
+            data = json.load(f)
+        data[setting] = value
+        with open('../static/config.json', "w") as f:
+            json.dump(data, f)
