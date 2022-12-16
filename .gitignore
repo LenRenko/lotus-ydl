@@ -130,3 +130,5 @@ dmypy.json
 
 # extras
 output/
+ffmpeg/
+config.json
