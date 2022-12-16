@@ -2,6 +2,7 @@ import customtkinter as ctk
 import tkinter as tk
 import os
 import json
+import yt_dl
 
 from tkinter import filedialog
 from pathlib import Path
@@ -130,7 +131,7 @@ class URLEntryFrame(ctk.CTkFrame):
         
         self.url_entry = ctk.CTkEntry(
             master=self, 
-            placeholder_text="Paste your url here", 
+            placeholder_text="Paste your url here and press ENTER to add to download list", 
             width=500, 
             corner_radius=0)
         self.url_entry.grid(row=0, columnspan=2, sticky="we", padx=(50,50), pady=5)
@@ -144,24 +145,31 @@ class URLEntryFrame(ctk.CTkFrame):
             font=('Helvetica', 13, 'bold'))
         self.dl_button.grid(row=1, column=1, sticky="w", padx=10, pady=(2,10))
         
-    def get_entry_value(self):
-        """
-        Get the value of the URL entry
-        """
-        return ""
-
-
+        # Bind ENTER key to the url entry to automatically do something when ENTER is pressed
+        self.url_entry.bind("<Return>", self.get_url_info)
+        #self.dl_button.configure(command=self.get_url_info)
+        
+    def get_url_info(self, event=0):
+        url = self.url_entry.get()
+        if url:
+            if url not in self.master.dl_frame.download_urls:
+                master_title = self.master.dl_frame.current_dl.yt_title
+                url_title = yt_dl.get_yt_info(url)
+                master_title.configure(text=url_title)
+                self.master.dl_frame.update_list(url, url_title)
+                self.url_entry.delete(0, 'end')
+            
 class DownloadItemFrame(ctk.CTkFrame):
-    """
-    Define the download list with all current downloading files history.
-    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.configure(border_width=1)
-                
+        
         # Title label
-        self.yt_title = ctk.CTkLabel(master=self, text=f"[Insert file title here]")
+        self.yt_title = ctk.CTkLabel(
+            master=self,
+            text=f"",
+            font=('Helvetica', 14, 'bold')) # ! Insert music title here
         self.yt_title.grid(row=0, column=0, sticky="w", padx=(10,0), pady=(2, 0))
         
         # progress bar
@@ -170,12 +178,13 @@ class DownloadItemFrame(ctk.CTkFrame):
         self.progress_bar.set(0)
         
         # percent label
-        self.progress_percent = ctk.CTkLabel(master=self, text="[percentage here]")
+        self.progress_percent = ctk.CTkLabel(master=self, text=f"") # ! Insert progress percentage here
         self.progress_percent.grid(row=1, column=1, sticky="we", padx=(20,20), pady=(2,2))
 
 class DownloadListFrame(ctk.CTkFrame):
     
     download_list = []
+    download_urls = []
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -188,13 +197,29 @@ class DownloadListFrame(ctk.CTkFrame):
         self.title_label = ctk.CTkLabel(master=self, text="Download List", font=('Helvetica', 14, 'bold'))
         self.title_label.pack()
         
-        self.dl_list = ctk.CTkTextbox(master=self, corner_radius=0, state="disabled", fg_color="gray70", height=180)
+        self.dl_list = ctk.CTkTextbox(
+            master=self,
+            corner_radius=0,
+            state="disabled",
+            fg_color="gray80",
+            height=180)
         self.dl_list.pack(fill=tk.BOTH, padx=10, pady=5)
-        
-    
-    def get_download_list(self):
-        return self.download_list
 
+    def update_list(self, url: str, title: str):
+        if url not in self.download_urls:
+            self.download_urls.append(url)
+        if title not in self.download_list:
+            self.download_list.append(title)
+            idx = self.download_list.index(title)
+            title_text = str(idx+1)+ " - " + title +"\n"
+            
+            # Write in the dl_list the song
+            self.dl_list.configure(state="normal")
+            self.dl_list.insert(f"{idx+1}.0", title_text)
+            self.dl_list.update()
+            self.dl_list.configure(state="disabled")
+        
+        self.master.url_frame.url_entry.delete(0, 'end')
 
 class SettingsFrame(ctk.CTkFrame):
     def __init__(self, *args, **kwargs):
@@ -226,7 +251,7 @@ class App(ctk.CTk):
     Main application interface
     """
     WIDTH = 600
-    HEIGHT = 520
+    HEIGHT = 540
     
     download_list = []
     output_format = "mp3"
@@ -280,7 +305,7 @@ class App(ctk.CTk):
         self.destroy()
 
     def init_settings(self):
-        with open('../static/config.json') as f:
+        with open('../config.json') as f:
             data = json.load(f)
             
             self.output_format = data["output_format"]
@@ -293,8 +318,8 @@ class App(ctk.CTk):
             ctk.set_default_color_theme(os.path.abspath("../static/theme.json"))
     
     def set_setting(self, setting: str, value: str):
-        with open('../static/config.json') as f:
+        with open('../config.json') as f:
             data = json.load(f)
         data[setting] = value
-        with open('../static/config.json', "w") as f:
+        with open('../config.json', "w") as f:
             json.dump(data, f)
