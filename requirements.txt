@@ -16,4 +16,4 @@ tkinter-tooltip==2.1.0
 tomli==2.0.1
 typing_extensions==4.4.0
 websockets==10.3
-yt-dlp==2022.10.4
+yt-dlp==2022.11.11
