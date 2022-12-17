@@ -1,3 +1,4 @@
+from time import sleep
 import customtkinter as ctk
 import tkinter as tk
 import os
@@ -80,7 +81,6 @@ class OutputTopLevel(ctk.CTkToplevel):
             offvalue="Light",
             corner_radius=2)
         self.dark_mode.configure(command=self.switch_event)
-        self.dark_mode.select()
         self.dark_mode.grid(row=6, column=0, padx=20, pady=(10,10))
         
     
@@ -90,8 +90,13 @@ class OutputTopLevel(ctk.CTkToplevel):
         """
         if self.dark_mode.get() == "Dark":
             ctk.set_appearance_mode("Dark")
+            self.master.light_mode = "Dark"
+            self.dark_mode.select()
         else:
             ctk.set_appearance_mode("Light")
+            self.master.light_mode = "Light"
+            self.dark_mode.deselect()
+            
         self.master.set_setting("light_mode", self.dark_mode.get())
        
     def set_output_dir(self):
@@ -109,6 +114,72 @@ class OutputTopLevel(ctk.CTkToplevel):
         self.withdraw()
         self.master.grab_set()
 
+# =========== Confirm Top Level ============= #
+class ConfirmTopLevel(ctk.CTkToplevel):
+    
+    playlist_url = ""
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        self.title("Confirm")
+        self.geometry("260x140+820+300")
+        self.resizable(0,0)
+        self.protocol(
+            "WM_DELETE_WINDOW", self.on_closing
+        )
+        self.iconbitmap("B:\Dev\Projetcs\lotus-ydl\static\img\lunar_lotus_logo.ico")
+    
+        # confirm text
+        self.txt_label = ctk.CTkLabel(master=self, text="This file is part of a playlist. \n Do you want to download all the playlist ?", font=('Helvetica', 12, 'bold'))
+        self.txt_label.pack(pady=(20, 0))
+        
+        # buttons
+        self.yes_button = ctk.CTkButton(
+            master=self,
+            text="Yes",
+            cursor="hand2",
+            border_width=0,
+            corner_radius=0,
+            font=('Helvetica', 13, 'bold'),
+            width=50,
+            command=self.yes_command)
+        self.yes_button.pack(side=tk.LEFT, padx=(50,0))
+        
+
+        self.no_button = ctk.CTkButton(
+            master=self,
+            text="No",
+            cursor="hand2",
+            border_width=0,
+            corner_radius=0,
+            font=('Helvetica', 13, 'bold'),
+            width=50)
+        self.no_button.pack(side=tk.RIGHT, padx=(0, 50))
+        
+    
+    def yes_command(self):
+        self.master.url_frame.url_entry.delete(0, tk.END)
+        self.yes_button.configure(state="disabled")
+        self.no_button.configure(state="disabled")
+        self.txt_label.configure(text="Getting playlist songs...")
+        sleep(1)
+        self.get_playlist_titles()
+    
+    def no_command(self):
+        ""
+     
+    def on_closing(self):
+        self.withdraw()
+        self.master.grab_set()
+    
+    def get_playlist_titles(self):
+        playlist_songs = yt_dl.get_playlist_titles(self.playlist_url)
+        self.on_closing()
+        self.master.dl_frame.update_list_with_playlist(playlist_songs)
+        
+# ================================================================= #
+
 class LogoFrame(ctk.CTkFrame):
     """
         Top frame for logo title display
@@ -122,6 +193,7 @@ class LogoFrame(ctk.CTkFrame):
         
         self.image_label = ctk.CTkLabel(master=self, image=self.logo_image, text="")
         self.image_label.grid(row=0, column=0, sticky="nswe", ipadx=150)
+        
 class URLEntryFrame(ctk.CTkFrame):
     """
     Define the top frame where the URL entry is with one button to add url to list of URLs
@@ -152,12 +224,17 @@ class URLEntryFrame(ctk.CTkFrame):
     def get_url_info(self, event=0):
         url = self.url_entry.get()
         if url:
-            if url not in self.master.dl_frame.download_urls:
-                master_title = self.master.dl_frame.current_dl.yt_title
-                url_title = yt_dl.get_yt_info(url)
-                master_title.configure(text=url_title)
-                self.master.dl_frame.update_list(url, url_title)
-                self.url_entry.delete(0, 'end')
+            if yt_dl.is_playlist(url):
+                print("This is a playlist")
+                self.master.confirm_window.playlist_url = url
+                self.master.confirm_window.deiconify()
+                self.master.confirm_window.grab_set()
+                
+            else:
+                if url not in self.master.dl_frame.download_urls:
+                    url_title = yt_dl.get_yt_info(url)
+                    self.master.dl_frame.update_list(url, url_title)
+                    self.url_entry.delete(0, 'end')
             
 class DownloadItemFrame(ctk.CTkFrame):
 
@@ -202,8 +279,22 @@ class DownloadListFrame(ctk.CTkFrame):
             corner_radius=0,
             state="disabled",
             fg_color="gray80",
-            height=180)
+            height=200)
         self.dl_list.pack(fill=tk.BOTH, padx=10, pady=5)
+
+    def update_list_with_playlist(self, playlist: list):
+        if playlist:
+            for title in playlist:
+                if title not in self.download_list:
+                    self.download_list.append(title)
+                    idx = self.download_list.index(title)
+                    title_text = str(idx+1)+ " - " + title +"\n"
+                    
+                    # Write in the dl_list the song
+                    self.dl_list.configure(state="normal")
+                    self.dl_list.insert(f"{idx+1}.0", title_text)
+                    self.dl_list.update()
+                    self.dl_list.configure(state="disabled")
 
     def update_list(self, url: str, title: str):
         if url not in self.download_urls:
@@ -274,6 +365,10 @@ class App(ctk.CTk):
         # init options windows
         self.output_window = OutputTopLevel(self)
         self.output_window.withdraw()
+        
+        # init confirm top level
+        self.confirm_window = ConfirmTopLevel(self)
+        self.confirm_window.withdraw()
         
         # ============ LOGO FRAME ========== #
         self.logo_frame = LogoFrame(master=self)
