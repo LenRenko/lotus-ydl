@@ -1,4 +1,3 @@
-from time import sleep
 import customtkinter as ctk
 import tkinter as tk
 import os
@@ -123,7 +122,7 @@ class ConfirmTopLevel(ctk.CTkToplevel):
         super().__init__(*args, **kwargs)
         
         self.title("Confirm")
-        self.geometry("320x140+820+300")
+        self.geometry("340x250+820+300")
         self.resizable(0,0)
         self.protocol(
             "WM_DELETE_WINDOW", self.on_closing
@@ -167,14 +166,26 @@ class ConfirmTopLevel(ctk.CTkToplevel):
             command=self.song_only)
         self.only_song.pack(side=tk.RIGHT, padx=(10, 10))
         
+        
     
     def yes_command(self):
         self.master.url_frame.url_entry.delete(0, tk.END)
-        playlist_songs = yt_dl.get_playlist_titles(self.playlist_url)
+        playlist_thread = yt_dl.AsyncExtractPlaylist(self.playlist_url)
+        playlist_thread.start()
         
+        self.master.dl_frame.current_dl.yt_title.configure(text="Fetching songs from playlist, please wait ...")
+        self.master.dl_frame.current_dl.yt_title.configure(text_color="#f2cc8f")
+        self.monitor(playlist_thread)
         self.on_closing()
-        self.master.dl_frame.update_list_with_playlist(playlist_songs)
     
+    def monitor(self, thread):
+        if thread.is_alive():
+            # check the thread every 100ms
+            self.after(250, lambda: self.monitor(thread))
+        else:
+            self.master.dl_frame.update_list_with_playlist(thread.playlist_titles)
+            self.master.dl_frame.current_dl.yt_title.configure(text="")
+            
     def song_only(self):
         print(self.playlist_url)
         self.master.url_frame.url_entry.delete(0, tk.END)

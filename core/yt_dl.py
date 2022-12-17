@@ -42,6 +42,7 @@ def set_options(dir: str, format: str, skip_dl: bool) -> dict:
             "outtmpl": os.path.join(dir, "%(title)s.%(ext)s"),
             "progress_hooks": [download_hook],
             "skip_download": skip_dl,
+            "quiet": True
         }
     elif format == "MP4":
         yt_opts = {
@@ -62,6 +63,32 @@ def is_playlist(url: str):
 
 
 # =================================================================
+class AsyncExtractPlaylist(Thread):
+    """
+        Asyncrhonously get playlist songs informations and return it to UI
+    """
+    def __init__(self, url):
+        super().__init__()
+        self.url = url
+        self.playlist_titles = []
+        self.playlist_count = 0
+    
+    def run(self):
+        yt_opt = set_options(settings['output_dir'], settings['output_format'], skip_dl=True)
+        try:
+            with yt.YoutubeDL(yt_opt) as ydl:
+                info = ydl.extract_info(self.url, download=False)
+                print(info.keys())
+                self.playlist_count = info['playlist_count']
+                
+                for songs in info['entries']:
+                    song_url = YOUTUBE_BASE+str(songs['id'])
+                    DOWNLOAD_LIST.append(song_url)
+                    self.playlist_titles.append(songs['title'])
+                return self.playlist_titles
+        except yt.utils.DownloadError:
+            raise URLError
+
 def get_playlist_titles(url: str):
     """
         Extract all songs titles from the playlist eurl entry
@@ -99,7 +126,7 @@ def get_yt_info(url: str):
 
 # Downloading hook to retrieve progress data
 def download_hook(d):
-    print("ICI")
+    print(d['status'])
     if d["status"] == "downloading":
         print(
             "\n"
