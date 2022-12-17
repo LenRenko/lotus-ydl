@@ -154,29 +154,31 @@ class ConfirmTopLevel(ctk.CTkToplevel):
             border_width=0,
             corner_radius=0,
             font=('Helvetica', 13, 'bold'),
-            width=50)
+            width=50,
+            command=self.no_command)
         self.no_button.pack(side=tk.RIGHT, padx=(0, 50))
         
     
     def yes_command(self):
         self.master.url_frame.url_entry.delete(0, tk.END)
-        self.yes_button.configure(state="disabled")
-        self.no_button.configure(state="disabled")
-        self.txt_label.configure(text="Getting playlist songs...")
-        sleep(1)
-        self.get_playlist_titles()
+        playlist_songs = yt_dl.get_playlist_titles(self.playlist_url)
+        
+        self.on_closing()
+        self.master.dl_frame.update_list_with_playlist(playlist_songs)
     
     def no_command(self):
-        ""
+        print(self.playlist_url)
+        self.master.url_frame.url_entry.delete(0, tk.END)
+        yt_url = self.playlist_url.split('&')[0]
+        title = yt_dl.get_yt_info(yt_url)
+        
+        self.on_closing()
+        self.master.dl_frame.update_list(self.playlist_url, title)
      
     def on_closing(self):
         self.withdraw()
         self.master.grab_set()
-    
-    def get_playlist_titles(self):
-        playlist_songs = yt_dl.get_playlist_titles(self.playlist_url)
-        self.on_closing()
-        self.master.dl_frame.update_list_with_playlist(playlist_songs)
+        
         
 # ================================================================= #
 
@@ -299,16 +301,17 @@ class DownloadListFrame(ctk.CTkFrame):
     def update_list(self, url: str, title: str):
         if url not in self.download_urls:
             self.download_urls.append(url)
-        if title not in self.download_list:
-            self.download_list.append(title)
-            idx = self.download_list.index(title)
-            title_text = str(idx+1)+ " - " + title +"\n"
             
-            # Write in the dl_list the song
-            self.dl_list.configure(state="normal")
-            self.dl_list.insert(f"{idx+1}.0", title_text)
-            self.dl_list.update()
-            self.dl_list.configure(state="disabled")
+            if title not in self.download_list:
+                self.download_list.append(title)
+                idx = self.download_list.index(title)
+                title_text = str(idx+1)+ " - " + title +"\n"
+                
+                # Write in the dl_list the song
+                self.dl_list.configure(state="normal")
+                self.dl_list.insert(f"{idx+1}.0", title_text)
+                self.dl_list.update()
+                self.dl_list.configure(state="disabled")
         
         self.master.url_frame.url_entry.delete(0, 'end')
 

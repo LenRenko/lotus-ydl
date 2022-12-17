@@ -82,6 +82,7 @@ def get_playlist_titles(url: str):
 
 def get_yt_info(url: str):
     yt_opt = set_options(settings['output_dir'], settings['output_format'], skip_dl=True)
+    DOWNLOAD_LIST.append(url)
     try:
         with yt.YoutubeDL(yt_opt) as ydl:
             info = ydl.extract_info(url, download=False)
