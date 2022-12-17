@@ -17,14 +17,30 @@ class ThreadWithResult(Thread):
 
 DOWNLOAD_LIST = [] # urls in waiting list for download
 YOUTUBE_BASE = "https://www.youtube.com/watch?v="
+COMPLETED = "Completed"
+DOWNLOADING = "Downloading"
+
 
 # Opening settings file
 with open('../config.json', 'r') as f:
     settings = json.load(f)
 
+# Downloading hook to retrieve progress data
+def download_hook(d):
+    print(d['status'])
+    if d["status"] == "downloading":
+        print(
+            "\n"
+            + str(
+                round(float(d["downloaded_bytes"]) / float(d["total_bytes"]) * 100, 1)
+            )
+        )
+        print(d["eta"])
+
+
 def set_options(dir: str, format: str, skip_dl: bool) -> dict:
     """
-        Set the default options 
+        Set options for youtube download
     """
     yt_opts = ""
     if format == "MP3":
@@ -42,7 +58,7 @@ def set_options(dir: str, format: str, skip_dl: bool) -> dict:
             "outtmpl": os.path.join(dir, "%(title)s.%(ext)s"),
             "progress_hooks": [download_hook],
             "skip_download": skip_dl,
-            "quiet": True
+            "quiet": True,
         }
     elif format == "MP4":
         yt_opts = {
@@ -61,6 +77,11 @@ def is_playlist(url: str):
         return True
     return False
 
+def is_youtube_url(url: str):
+    if "youtube.com/watch" in url:
+        return True
+    else:
+        return False
 
 # =================================================================
 class AsyncExtractPlaylist(Thread):
@@ -71,14 +92,12 @@ class AsyncExtractPlaylist(Thread):
         super().__init__()
         self.url = url
         self.playlist_titles = []
-        self.playlist_count = 0
     
     def run(self):
         yt_opt = set_options(settings['output_dir'], settings['output_format'], skip_dl=True)
         try:
             with yt.YoutubeDL(yt_opt) as ydl:
                 info = ydl.extract_info(self.url, download=False)
-                print(info.keys())
                 self.playlist_count = info['playlist_count']
                 
                 for songs in info['entries']:
@@ -89,66 +108,52 @@ class AsyncExtractPlaylist(Thread):
         except yt.utils.DownloadError:
             raise URLError
 
-def get_playlist_titles(url: str):
+class AsyncExtractSongInfo(Thread):
     """
-        Extract all songs titles from the playlist eurl entry
+        Get song informations
     """
-    yt_opt = set_options(settings['output_dir'], settings['output_format'], skip_dl=True)
-    playlist_ttitles = []
-    try:
-        with yt.YoutubeDL(yt_opt) as ydl:
-            info = ydl.extract_info(url, download=False)
-            print(info.keys())
-            print(info['playlist_count'])
-            
-            for songs in info['entries']:
-                song_url = YOUTUBE_BASE+str(songs['id'])
-                DOWNLOAD_LIST.append(song_url)
-                playlist_ttitles.append(songs['title'])
-            
-            return playlist_ttitles
-    except yt.utils.DownloadError:
-        raise URLError
-
-def get_yt_info(url: str):
-    yt_opt = set_options(settings['output_dir'], settings['output_format'], skip_dl=True)
-    DOWNLOAD_LIST.append(url)
-    try:
-        with yt.YoutubeDL(yt_opt) as ydl:
-            info = ydl.extract_info(url, download=False)
-            print(info['title'])
-    except yt.utils.DownloadError:
-        raise URLError
+    def __init__(self, url):
+        super().__init__()
+        self.url = url
+        self.title = ""
     
-    return info['title']
+    def run(self):
+        yt_opt = set_options(settings['output_dir'], settings['output_format'], skip_dl=True)
+        DOWNLOAD_LIST.append(self.url)
+        try:
+            with yt.YoutubeDL(yt_opt) as ydl:
+                info = ydl.extract_info(self.url, download=False)
+                self.title = info['title']
+                print(info['title'])
+                
+                return self.title
+        except yt.utils.DownloadError:
+            raise URLError
 
 # ============================== DOWNLOAD ============================ #
+class AsyncDownload(Thread):
+    """
+        Thread for downloading songs
+    """
+    def __init__(self):
+        super().__init__()
 
-# Downloading hook to retrieve progress data
-def download_hook(d):
-    print(d['status'])
-    if d["status"] == "downloading":
-        print(
-            "\n"
-            + str(
-                round(float(d["downloaded_bytes"]) / float(d["total_bytes"]) * 100, 1)
-            )
-        )
-        print(d["eta"])
-
-
-def start_download(url: str):
-    download_thread = Thread(target=download, args=[url])
-    download_thread.start()
-
-def download(url: str):
-    yt_opt = set_options(settings['output_dir'], settings['output_format'], skip_dl=False)
-
-    try:
-        with yt.YoutubeDL(yt_opt) as ydl:
-            info = ydl.extract_info(url, download=False)
-            ydl.download([url])
-            print(info.keys())
-            print(info['title'])
-    except yt.utils.DownloadError:
-        raise URLError
+        self.status = DOWNLOADING
+    
+    def run(self):
+        yt_opt = set_options(
+            settings['output_dir'], 
+            settings['output_format'], 
+            skip_dl=False)
+ 
+        try:
+            with yt.YoutubeDL(yt_opt) as ydl:
+                info = ydl.extract_info(url, download=False)
+                ydl.download([url])
+                print(info.keys())
+                print(info['title'])
+        except yt.utils.DownloadError:
+            raise URLError
+    
+def start_download():
+    ""

@@ -117,6 +117,7 @@ class OutputTopLevel(ctk.CTkToplevel):
 class ConfirmTopLevel(ctk.CTkToplevel):
     
     playlist_url = ""
+    song_url = ""
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -166,8 +167,6 @@ class ConfirmTopLevel(ctk.CTkToplevel):
             command=self.song_only)
         self.only_song.pack(side=tk.RIGHT, padx=(10, 10))
         
-        
-    
     def yes_command(self):
         self.master.url_frame.url_entry.delete(0, tk.END)
         playlist_thread = yt_dl.AsyncExtractPlaylist(self.playlist_url)
@@ -175,26 +174,31 @@ class ConfirmTopLevel(ctk.CTkToplevel):
         
         self.master.dl_frame.current_dl.yt_title.configure(text="Fetching songs from playlist, please wait ...")
         self.master.dl_frame.current_dl.yt_title.configure(text_color="#f2cc8f")
-        self.monitor(playlist_thread)
+        self.monitor(playlist_thread, 'PL')
+        self.master.dl_frame.current_dl.progress_bar.start()
         self.on_closing()
-    
-    def monitor(self, thread):
-        if thread.is_alive():
-            # check the thread every 100ms
-            self.after(250, lambda: self.monitor(thread))
-        else:
-            self.master.dl_frame.update_list_with_playlist(thread.playlist_titles)
-            self.master.dl_frame.current_dl.yt_title.configure(text="")
             
     def song_only(self):
-        print(self.playlist_url)
         self.master.url_frame.url_entry.delete(0, tk.END)
-        yt_url = self.playlist_url.split('&')[0]
-        title = yt_dl.get_yt_info(yt_url)
+        self.song_url = self.playlist_url.split('&')[0]
+        song_thread = yt_dl.AsyncExtractSongInfo(self.song_url)
+        song_thread.start()
         
+        self.monitor(song_thread, 'S')
         self.on_closing()
-        self.master.dl_frame.update_list(self.playlist_url, title)
-     
+    
+    def monitor(self, thread, type):
+        if thread.is_alive():
+            self.after(100, lambda: self.monitor(thread, type))
+        else:
+            if type == "PL":
+                self.master.dl_frame.update_list_with_playlist(thread.playlist_titles)
+                self.master.dl_frame.current_dl.progress_bar.stop()
+            elif type == "S":
+                self.master.dl_frame.update_list(self.song_url, thread.title)
+            
+            self.master.dl_frame.current_dl.yt_title.configure(text="")
+                
     def on_closing(self):
         self.withdraw()
         self.master.grab_set()
@@ -220,44 +224,59 @@ class URLEntryFrame(ctk.CTkFrame):
     """
     Define the top frame where the URL entry is with one button to add url to list of URLs
     """
+    
+    url = ""
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
         self.url_entry = ctk.CTkEntry(
             master=self, 
-            placeholder_text="Paste url here, press ENTER to add to list and click Download to download list", 
+            placeholder_text="Paste url here, press ENTER or click Add and click Download to download all list", 
             width=500, 
             corner_radius=0)
-        self.url_entry.grid(row=0, columnspan=2, sticky="we", padx=(50,50), pady=5)
+        self.url_entry.pack(padx=(50,50), pady=5)
         
-        self.dl_button = ctk.CTkButton(
+        self.add = ctk.CTkButton(
             master=self,
-            text="Download",
+            text="Add",
             cursor="hand2",
             border_width=0,
             corner_radius=0,
             font=('Helvetica', 13, 'bold'))
-        self.dl_button.grid(row=1, column=1, sticky="w", padx=10, pady=(2,10))
+        self.add.pack(padx=10, pady=(2,10))
         
         # Bind ENTER key to the url entry to automatically do something when ENTER is pressed
         self.url_entry.bind("<Return>", self.get_url_info)
-        #self.dl_button.configure(command=self.get_url_info)
+        self.add.configure(command=self.get_url_info)
         
     def get_url_info(self, event=0):
-        url = self.url_entry.get()
-        if url:
-            if yt_dl.is_playlist(url):
-                print("This is a playlist")
-                self.master.confirm_window.playlist_url = url
-                self.master.confirm_window.deiconify()
-                self.master.confirm_window.grab_set()
-                
+        self.url = self.url_entry.get()
+        
+        if self.url:
+            if yt_dl.is_youtube_url(self.url):
+                self.master.dl_frame.current_dl.yt_title.configure(text="")
+                if yt_dl.is_playlist(self.url):
+                    self.master.confirm_window.playlist_url = self.url
+                    self.master.confirm_window.deiconify()
+                    self.master.confirm_window.grab_set()
+                else:
+                    if self.url not in self.master.dl_frame.download_urls:
+                        song_thread = yt_dl.AsyncExtractSongInfo(self.url)
+                        song_thread.start()
+                        
+                        self.monitor(song_thread)
+
             else:
-                if url not in self.master.dl_frame.download_urls:
-                    url_title = yt_dl.get_yt_info(url)
-                    self.master.dl_frame.update_list(url, url_title)
-                    self.url_entry.delete(0, 'end')
-            
+                self.master.dl_frame.current_dl.yt_title.configure(text="Invalid youtube URL")
+    
+    def monitor(self, thread):
+        if thread.is_alive():
+            self.after(100, lambda: self.monitor(thread))
+        else:
+            self.master.dl_frame.update_list(self.url, thread.title)
+            self.url_entry.delete(0, 'end')
+    
 class DownloadItemFrame(ctk.CTkFrame):
 
     def __init__(self, *args, **kwargs):
@@ -268,17 +287,17 @@ class DownloadItemFrame(ctk.CTkFrame):
         self.yt_title = ctk.CTkLabel(
             master=self,
             text=f"",
-            font=('Helvetica', 14, 'bold')) # ! Insert music title here
+            font=('Helvetica', 14, 'bold'))
         self.yt_title.grid(row=0, column=0, sticky="w", padx=(10,0), pady=(2, 0))
         
         # progress bar
-        self.progress_bar = ctk.CTkProgressBar(master=self, height=10, width=420, corner_radius=0)
+        self.progress_bar = ctk.CTkProgressBar(master=self, height=10, width=420, corner_radius=0, mode="indeterminate")
         self.progress_bar.grid(row=1, column=0, padx=(10,0))
         self.progress_bar.set(0)
         
         # percent label
-        self.progress_percent = ctk.CTkLabel(master=self, text=f"") # ! Insert progress percentage here
-        self.progress_percent.grid(row=1, column=1, sticky="we", padx=(20,20), pady=(2,2))
+        self.progress_count = ctk.CTkLabel(master=self, text=f"") # ! Insert progress count
+        self.progress_count.grid(row=1, column=1, sticky="we", padx=(20,20), pady=(2,2))
 
 class DownloadListFrame(ctk.CTkFrame):
     
@@ -301,8 +320,17 @@ class DownloadListFrame(ctk.CTkFrame):
             corner_radius=0,
             state="disabled",
             fg_color="gray80",
-            height=200)
+            height=160)
         self.dl_list.pack(fill=tk.BOTH, padx=10, pady=5)
+        
+        self.download = ctk.CTkButton(
+            master=self,
+            text="Download",
+            cursor="hand2",
+            border_width=0,
+            corner_radius=0,
+            font=('Helvetica', 13, 'bold'))
+        self.download.pack(pady=(5,5))
 
     def update_list_with_playlist(self, playlist: list):
         if playlist:
@@ -358,7 +386,7 @@ class SettingsFrame(ctk.CTkFrame):
             width=20
         )
         self.setting_button.configure(command=self.master.on_open_settings)
-        self.setting_button.pack(side=tk.RIGHT, padx=(0, 10))
+        self.setting_button.pack(side=tk.RIGHT, padx=(0, 10), pady=(1,4))
 
 class App(ctk.CTk):
     """
@@ -418,9 +446,6 @@ class App(ctk.CTk):
                 self.output_window.dark_mode.deselect()
             else:
                 self.output_window.dark_mode.select()
-    
-    def on_closing(self, event=0):
-        self.destroy()
 
     def init_settings(self):
         with open('../config.json') as f:
@@ -441,3 +466,6 @@ class App(ctk.CTk):
         data[setting] = value
         with open('../config.json', "w") as f:
             json.dump(data, f)
+    
+    def on_closing(self, event=0):
+        self.destroy()
