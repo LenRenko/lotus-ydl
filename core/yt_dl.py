@@ -63,6 +63,9 @@ def is_playlist(url: str):
 
 # =================================================================
 def get_playlist_titles(url: str):
+    """
+        Extract all songs titles from the playlist eurl entry
+    """
     yt_opt = set_options(settings['output_dir'], settings['output_format'], skip_dl=True)
     playlist_ttitles = []
     try:
@@ -86,7 +89,6 @@ def get_yt_info(url: str):
     try:
         with yt.YoutubeDL(yt_opt) as ydl:
             info = ydl.extract_info(url, download=False)
-            #print(info.keys())
             print(info['title'])
     except yt.utils.DownloadError:
         raise URLError

@@ -123,7 +123,7 @@ class ConfirmTopLevel(ctk.CTkToplevel):
         super().__init__(*args, **kwargs)
         
         self.title("Confirm")
-        self.geometry("260x140+820+300")
+        self.geometry("320x140+820+300")
         self.resizable(0,0)
         self.protocol(
             "WM_DELETE_WINDOW", self.on_closing
@@ -131,7 +131,7 @@ class ConfirmTopLevel(ctk.CTkToplevel):
         self.iconbitmap("B:\Dev\Projetcs\lotus-ydl\static\img\lunar_lotus_logo.ico")
     
         # confirm text
-        self.txt_label = ctk.CTkLabel(master=self, text="This file is part of a playlist. \n Do you want to download all the playlist ?", font=('Helvetica', 12, 'bold'))
+        self.txt_label = ctk.CTkLabel(master=self, text="This file is part of a playlist. \n Do you want to add all the playlist to download ? \n \n This can take a moment depending on playlist length", font=('Helvetica', 12, 'bold'))
         self.txt_label.pack(pady=(20, 0))
         
         # buttons
@@ -146,7 +146,6 @@ class ConfirmTopLevel(ctk.CTkToplevel):
             command=self.yes_command)
         self.yes_button.pack(side=tk.LEFT, padx=(50,0))
         
-
         self.no_button = ctk.CTkButton(
             master=self,
             text="No",
@@ -155,8 +154,18 @@ class ConfirmTopLevel(ctk.CTkToplevel):
             corner_radius=0,
             font=('Helvetica', 13, 'bold'),
             width=50,
-            command=self.no_command)
+            command=self.on_closing)
         self.no_button.pack(side=tk.RIGHT, padx=(0, 50))
+        
+        self.only_song = ctk.CTkButton(
+            master=self,
+            text="This song only",
+            cursor="hand2",
+            border_width=0,
+            corner_radius=0,
+            font=('Helvetica', 13, 'bold'),
+            command=self.song_only)
+        self.only_song.pack(side=tk.RIGHT, padx=(10, 10))
         
     
     def yes_command(self):
@@ -166,7 +175,7 @@ class ConfirmTopLevel(ctk.CTkToplevel):
         self.on_closing()
         self.master.dl_frame.update_list_with_playlist(playlist_songs)
     
-    def no_command(self):
+    def song_only(self):
         print(self.playlist_url)
         self.master.url_frame.url_entry.delete(0, tk.END)
         yt_url = self.playlist_url.split('&')[0]
@@ -205,7 +214,7 @@ class URLEntryFrame(ctk.CTkFrame):
         
         self.url_entry = ctk.CTkEntry(
             master=self, 
-            placeholder_text="Paste your url here and press ENTER to add to download list", 
+            placeholder_text="Paste url here, press ENTER to add to list and click Download to download list", 
             width=500, 
             corner_radius=0)
         self.url_entry.grid(row=0, columnspan=2, sticky="we", padx=(50,50), pady=5)

@@ -123,7 +123,7 @@
     "border_width": 0,
     "fg_color": ["gray100", "gray20"],
     "border_color": ["#979DA2", "#565B5E"],
-    "text_color": ["gray14", "gray84"],
+    "text_color": ["gray14", "gray10"],
     "scrollbar_button_color": ["gray55", "gray41"],
     "scrollbar_button_hover_color": ["gray40", "gray53"]
   },
