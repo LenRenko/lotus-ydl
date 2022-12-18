@@ -194,6 +194,8 @@ class ConfirmTopLevel(ctk.CTkToplevel):
             if type == "PL":
                 self.master.dl_frame.update_list_with_playlist(thread.playlist_titles)
                 self.master.dl_frame.current_dl.progress_bar.stop()
+                self.master.dl_frame.current_dl.progress_bar.configure(mode="determinate")
+                self.master.dl_frame.current_dl.progress_bar.set(0)
             elif type == "S":
                 self.master.dl_frame.update_list(self.song_url, thread.title)
             

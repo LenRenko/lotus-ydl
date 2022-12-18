@@ -1,5 +1,4 @@
 from __future__ import unicode_literals
-from errors import URLError
 from threading import Thread
 
 import os
@@ -7,25 +6,45 @@ import yt_dlp as yt
 import json
 
 
+DOWNLOAD_LIST = [] # urls in waiting list for download
+YOUTUBE_BASE = "https://www.youtube.com/watch?v="
+COMPLETED = "Completed"
+DOWNLOADING = "Downloading"
+
+class URLError(Exception):
+    """Raised when bad url is entered for download"""
+    pass
+
 class ThreadWithResult(Thread):
     def __init__(self, group=None, target=None, name=None, args=(), kwargs={}, *, daemon=None):
         def function():
             self.result = target(*args, **kwargs)
         super().__init__(group=group, target=function, name=name, daemon=daemon)
 
-# =================================================================
 
-DOWNLOAD_LIST = [] # urls in waiting list for download
-YOUTUBE_BASE = "https://www.youtube.com/watch?v="
-COMPLETED = "Completed"
-DOWNLOADING = "Downloading"
 
+def check_config():
+    config_file = os.path.exists("../config.json")
+    data = {
+                "output_dir": "../output/", 
+                "output_format": "MP3", 
+                "light_mode": "Light"
+            }
+    if not config_file:
+        with open('../config.json', 'w') as f:
+            json.dump(data, f, indent=4)
+    else:
+        print("config here")
+
+check_config()
 
 # Opening settings file
 with open('../config.json', 'r') as f:
     settings = json.load(f)
 
-# Downloading hook to retrieve progress data
+# =================================================================
+
+
 
 
 def set_options(hook, dir: str, format: str, skip_dl: bool ) -> dict:
