@@ -127,7 +127,6 @@ class AsyncExtractSongInfo(Thread):
             with yt.YoutubeDL(yt_opt) as ydl:
                 info = ydl.extract_info(self.url, download=False)
                 self.title = info['title']
-                print(info['title'])
                 
                 return self.title
         except yt.utils.DownloadError:
@@ -170,12 +169,7 @@ class AsyncDownload(Thread):
 
     def download_hook(self, d):
         if d["status"] == "downloading":
-            print(
-                "\n"
-                + str(
-                    round(float(d["downloaded_bytes"]) / float(d["total_bytes"]) * 100, 1)
-                )
-            )
+            pass
         if d["status"] == "finished":
             self.status = COMPLETED
 
