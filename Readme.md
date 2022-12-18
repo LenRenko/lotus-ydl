@@ -6,7 +6,7 @@
 </p>
 
 <div align="center">
-    ![badge](https://img.shields.io/badge/Version-1.0.0-green)
+![version](https://img.shields.io/badge/Version-1.0.0-green)
 </div>
 
 ---
