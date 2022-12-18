@@ -1,6 +1,4 @@
-import gui
-import os
-import json
+from core import gui
 
 if __name__ == "__main__":
     

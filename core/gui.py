@@ -2,7 +2,7 @@ import customtkinter as ctk
 import tkinter as tk
 import os
 import json
-import yt_dl
+from . import yt_dl
 
 from tkinter import filedialog
 from pathlib import Path
@@ -21,7 +21,7 @@ class OutputTopLevel(ctk.CTkToplevel):
         self.protocol(
             "WM_DELETE_WINDOW", self.on_closing
         )
-        self.iconbitmap("B:\Dev\Projetcs\lotus-ydl\static\img\lunar_lotus_logo.ico")
+        self.iconbitmap(os.path.abspath('static\img\lunar_lotus_logo.ico'))
         
         # ============ Main frame =========== #
         self.setting_frame = ctk.CTkFrame(
@@ -128,7 +128,7 @@ class ConfirmTopLevel(ctk.CTkToplevel):
         self.protocol(
             "WM_DELETE_WINDOW", self.on_closing
         )
-        self.iconbitmap("B:\Dev\Projetcs\lotus-ydl\static\img\lunar_lotus_logo.ico")
+        self.iconbitmap(os.path.abspath("static\img\lunar_lotus_logo.ico"))
     
         # confirm text
         self.txt_label = ctk.CTkLabel(master=self, text="This file is part of a playlist. \n Do you want to add all the playlist to download ? \n \n This can take a moment depending on playlist length", font=('Helvetica', 12, 'bold'))
@@ -216,7 +216,7 @@ class LogoFrame(ctk.CTkFrame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        self.logo_image = ctk.CTkImage(Image.open("..\static\img\logo_ydl.png"), 
+        self.logo_image = ctk.CTkImage(Image.open(os.path.abspath("static\img\logo_ydl.png")), 
             size=(300,120)
         )
         
@@ -425,7 +425,7 @@ class SettingsFrame(ctk.CTkFrame):
         self.org_label.pack(side=tk.LEFT, padx=10)
         
         # settings button
-        image = Image.open("../static/img/settings_icon.png")
+        image = Image.open(os.path.abspath("static/img/settings_icon.png"))
         setting_icon = ctk.CTkImage(image)
         
         self.setting_button = ctk.CTkButton(
@@ -500,7 +500,7 @@ class App(ctk.CTk):
                 self.output_window.dark_mode.select()
 
     def init_settings(self):
-        with open('../config.json') as f:
+        with open(os.path.abspath('config.json')) as f:
             data = json.load(f)
             
             self.output_format = data["output_format"]
@@ -510,13 +510,14 @@ class App(ctk.CTk):
                 self.light_mode = data["light_mode"]
             if data['output_dir']:
                 self.output_dir = data["output_dir"]
-            ctk.set_default_color_theme(os.path.abspath("../static/theme.json"))
+            theme_path = os.path.abspath("static/theme.json")
+            ctk.set_default_color_theme(theme_path)
     
     def set_setting(self, setting: str, value: str):
-        with open('../config.json') as f:
+        with open(os.path.abspath('config.json')) as f:
             data = json.load(f)
         data[setting] = value
-        with open('../config.json', "w") as f:
+        with open(os.path.abspath('config.json'), "w") as f:
             json.dump(data, f)
     
     def on_closing(self, event=0):

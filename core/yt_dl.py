@@ -24,28 +24,23 @@ class ThreadWithResult(Thread):
 
 
 def check_config():
-    config_file = os.path.exists("../config.json")
+    config_file = os.path.exists("config.json")
     data = {
-                "output_dir": "../output/", 
+                "output_dir": "output/", 
                 "output_format": "MP3", 
                 "light_mode": "Light"
             }
     if not config_file:
-        with open('../config.json', 'w') as f:
+        with open(os.path.abspath('config.json'), 'w') as f:
             json.dump(data, f, indent=4)
-    else:
-        print("config here")
 
 check_config()
 
 # Opening settings file
-with open('../config.json', 'r') as f:
+with open(os.path.abspath('config.json'), 'r') as f:
     settings = json.load(f)
 
 # =================================================================
-
-
-
 
 def set_options(hook, dir: str, format: str, skip_dl: bool ) -> dict:
     """
@@ -56,7 +51,7 @@ def set_options(hook, dir: str, format: str, skip_dl: bool ) -> dict:
         yt_opts = {
             "ignoreerrors": False,
             "format": "bestaudio/best",
-            "ffmpeg_location": "../ffmpeg/bin",
+            "ffmpeg_location": os.path.abspath("ffmpeg/bin"),
             "postprocessors": [
                 {
                     "key": "FFmpegExtractAudio",
@@ -140,8 +135,6 @@ class AsyncExtractSongInfo(Thread):
             raise URLError
 
 # ============================== DOWNLOAD ============================ #
-
-#! HANDLE DOWNLOAD SYSTEM
 
 class AsyncDownload(Thread):
     """
