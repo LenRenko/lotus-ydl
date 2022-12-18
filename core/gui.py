@@ -463,7 +463,7 @@ class App(ctk.CTk):
         self.protocol(
             "WM_DELETE_WINDOW", self.on_closing
         )
-        self.iconbitmap("B:\Dev\Projetcs\lotus-ydl\static\img\lunar_lotus_logo.ico")
+        self.iconbitmap(os.path.abspath("static\img\lunar_lotus_logo.ico"))
                 
         # init options windows
         self.output_window = OutputTopLevel(self)
