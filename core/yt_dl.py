@@ -9,6 +9,8 @@ DOWNLOAD_LIST = [] # urls in waiting list for download
 YOUTUBE_BASE = "https://www.youtube.com/watch?v="
 COMPLETED = "Completed"
 DOWNLOADING = "Downloading"
+output_format = "MP3"
+output_dir = os.path.expanduser("~/YTDownloadOutput/")
 
 class URLError(Exception):
     """Raised when bad url is entered for download"""
@@ -25,8 +27,8 @@ class ThreadWithResult(Thread):
 def check_config():
     config_file = os.path.exists("config.json")
     data = {
-                "output_dir": os.path.expanduser("~/YTDownloadOutput/"), 
-                "output_format": "MP3", 
+                "output_dir": output_dir, 
+                "output_format": output_format, 
                 "light_mode": "Light"
             }
     if not config_file:
@@ -106,6 +108,8 @@ class AsyncExtractPlaylist(Thread):
         self.playlist_titles = []
     
     def run(self):
+        with open(os.path.abspath('config.json'), 'r') as f:
+            settings = json.load(f)
         yt_opt = set_options(None, settings['output_dir'], settings['output_format'], skip_dl=True, )
         try:
             with yt.YoutubeDL(yt_opt) as ydl:
@@ -130,6 +134,8 @@ class AsyncExtractSongInfo(Thread):
         self.title = ""
     
     def run(self):
+        with open(os.path.abspath('config.json'), 'r') as f:
+            settings = json.load(f)
         yt_opt = set_options(None, settings['output_dir'], settings['output_format'], skip_dl=True)
         DOWNLOAD_LIST.append(self.url)
         try:
@@ -158,6 +164,8 @@ class AsyncDownload(Thread):
         self.count = 0
             
     def run(self):
+        with open(os.path.abspath('config.json'), 'r') as f:
+            settings = json.load(f)
         yt_opt = set_options(self.download_hook, settings['output_dir'], settings['output_format'], skip_dl=False)
         for song in self.download_list:
             self.status = DOWNLOADING
