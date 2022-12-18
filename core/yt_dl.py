@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 from threading import Thread
 
 import os
@@ -26,7 +25,7 @@ class ThreadWithResult(Thread):
 def check_config():
     config_file = os.path.exists("config.json")
     data = {
-                "output_dir": "output/", 
+                "output_dir": os.path.expanduser("~/YTDownloadOutput/"), 
                 "output_format": "MP3", 
                 "light_mode": "Light"
             }
@@ -49,7 +48,7 @@ def set_options(hook, dir: str, format: str, skip_dl: bool ) -> dict:
     yt_opts = ""
     if format == "MP3":
         yt_opts = {
-            "ignoreerrors": False,
+            "ignoreerrors": True,
             "format": "bestaudio/best",
             "ffmpeg_location": os.path.abspath("ffmpeg/bin"),
             "postprocessors": [

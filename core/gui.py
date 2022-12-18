@@ -398,21 +398,21 @@ class DownloadListFrame(ctk.CTkFrame):
             current_progress_text.configure(text=f"{complete_items} / {total_items}")
             
             # Update progress bar
-            value = (complete_items+1/total_items)
+            value = (complete_items/total_items)
             self.current_dl.progress_bar.set(value)
     
     def update_ended(self):
+        self.dl_list.configure(state="normal")
+        self.dl_list.delete('1.0', tk.END)
         for title in self.download_list:
             idx = self.download_list.index(title)
             title_text = " [x] "+str(idx+1)+ "- " + title +"\n"
-            
             # Write in the dl_list the song
-            self.dl_list.configure(state="normal")
-            self.dl_list.delete('1.0', tk.END)
             self.dl_list.insert(f"{idx+1}.0", title_text)
-            self.dl_list.configure(state="disabled")
-        
+            
+        self.dl_list.configure(state="disabled")
         self.current_dl.progress_count.configure(text="")
+        self.current_dl.progress_bar.set(1)
         self.current_dl.yt_title.configure(text="DOWNLOAD COMPLETED")
         
 
