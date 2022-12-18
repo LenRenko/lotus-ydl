@@ -26,26 +26,16 @@ with open('../config.json', 'r') as f:
     settings = json.load(f)
 
 # Downloading hook to retrieve progress data
-def download_hook(d):
-    print(d['status'])
-    if d["status"] == "downloading":
-        print(
-            "\n"
-            + str(
-                round(float(d["downloaded_bytes"]) / float(d["total_bytes"]) * 100, 1)
-            )
-        )
-        print(d["eta"])
 
 
-def set_options(dir: str, format: str, skip_dl: bool) -> dict:
+def set_options(hook, dir: str, format: str, skip_dl: bool ) -> dict:
     """
         Set options for youtube download
     """
     yt_opts = ""
     if format == "MP3":
         yt_opts = {
-            "ignoreerrors": True,
+            "ignoreerrors": False,
             "format": "bestaudio/best",
             "ffmpeg_location": "../ffmpeg/bin",
             "postprocessors": [
@@ -56,7 +46,7 @@ def set_options(dir: str, format: str, skip_dl: bool) -> dict:
                 }
             ],
             "outtmpl": os.path.join(dir, "%(title)s.%(ext)s"),
-            "progress_hooks": [download_hook],
+            "progress_hooks": [hook],
             "skip_download": skip_dl,
             "quiet": True,
         }
@@ -65,7 +55,7 @@ def set_options(dir: str, format: str, skip_dl: bool) -> dict:
             "ignoreerrors": True,
             "format": "mp4",
             "outtmpl": os.path.join(dir, "%(title)s.%(ext)s"),
-            "progress_hooks": [download_hook],
+            "progress_hooks": [hook],
             "skip_download": skip_dl,
         }
 
@@ -94,7 +84,7 @@ class AsyncExtractPlaylist(Thread):
         self.playlist_titles = []
     
     def run(self):
-        yt_opt = set_options(settings['output_dir'], settings['output_format'], skip_dl=True)
+        yt_opt = set_options(None, settings['output_dir'], settings['output_format'], skip_dl=True, )
         try:
             with yt.YoutubeDL(yt_opt) as ydl:
                 info = ydl.extract_info(self.url, download=False)
@@ -118,7 +108,7 @@ class AsyncExtractSongInfo(Thread):
         self.title = ""
     
     def run(self):
-        yt_opt = set_options(settings['output_dir'], settings['output_format'], skip_dl=True)
+        yt_opt = set_options(None, settings['output_dir'], settings['output_format'], skip_dl=True)
         DOWNLOAD_LIST.append(self.url)
         try:
             with yt.YoutubeDL(yt_opt) as ydl:
@@ -131,6 +121,9 @@ class AsyncExtractSongInfo(Thread):
             raise URLError
 
 # ============================== DOWNLOAD ============================ #
+
+#! HANDLE DOWNLOAD SYSTEM
+
 class AsyncDownload(Thread):
     """
         Thread for downloading songs
@@ -139,21 +132,41 @@ class AsyncDownload(Thread):
         super().__init__()
 
         self.status = DOWNLOADING
-    
+        self.download_list = DOWNLOAD_LIST
+        self.downloaded = []
+        self.current_title = ""
+        self.complete_titles = []
+        self.count = 0
+            
     def run(self):
-        yt_opt = set_options(
-            settings['output_dir'], 
-            settings['output_format'], 
-            skip_dl=False)
- 
+        yt_opt = set_options(self.download_hook, settings['output_dir'], settings['output_format'], skip_dl=False)
+        for song in self.download_list:
+            self.status = DOWNLOADING
+            self.download(song, yt_opt)
+            self.downloaded.append(song)
+    
+    def download(self, url, yt_opt):
         try:
             with yt.YoutubeDL(yt_opt) as ydl:
                 info = ydl.extract_info(url, download=False)
                 ydl.download([url])
-                print(info.keys())
-                print(info['title'])
+                self.current_title = info['title']
+                self.complete_titles.append(info['title'])
+                self.count += 1
         except yt.utils.DownloadError:
             raise URLError
-    
-def start_download():
-    ""
+
+
+    def download_hook(self, d):
+        if d["status"] == "downloading":
+            print(
+                "\n"
+                + str(
+                    round(float(d["downloaded_bytes"]) / float(d["total_bytes"]) * 100, 1)
+                )
+            )
+        if d["status"] == "finished":
+            self.status = COMPLETED
+
+def delete_download_list():
+    DOWNLOAD_LIST.clear()

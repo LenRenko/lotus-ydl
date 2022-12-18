@@ -19,7 +19,7 @@
     "hover_color": ["#9a031e", "#b23a48"],
     "border_color": ["#264653", "#f6aa1c"],
     "text_color": ["#DCE4EE", "#e0fbfc"],
-    "text_color_disabled": ["#415a77", "#415a77"]
+    "text_color_disabled": ["#7d8597", "#7d8597"]
   },
   "CTkLabel": {
     "corner_radius": 0,

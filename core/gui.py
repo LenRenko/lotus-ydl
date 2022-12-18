@@ -173,7 +173,7 @@ class ConfirmTopLevel(ctk.CTkToplevel):
         playlist_thread.start()
         
         self.master.dl_frame.current_dl.yt_title.configure(text="Fetching songs from playlist, please wait ...")
-        self.master.dl_frame.current_dl.yt_title.configure(text_color="#f2cc8f")
+        self.master.dl_frame.current_dl.yt_title.configure(text_color="#708d81")
         self.monitor(playlist_thread, 'PL')
         self.master.dl_frame.current_dl.progress_bar.start()
         self.on_closing()
@@ -198,6 +198,7 @@ class ConfirmTopLevel(ctk.CTkToplevel):
                 self.master.dl_frame.update_list(self.song_url, thread.title)
             
             self.master.dl_frame.current_dl.yt_title.configure(text="")
+            self.master.dl_frame.current_dl.progress_count.configure(text=f"0 / {len(self.master.dl_frame.download_list)}")
                 
     def on_closing(self):
         self.withdraw()
@@ -276,6 +277,7 @@ class URLEntryFrame(ctk.CTkFrame):
         else:
             self.master.dl_frame.update_list(self.url, thread.title)
             self.url_entry.delete(0, 'end')
+            self.master.dl_frame.current_dl.progress_count.configure(text=f"0 / {len(self.master.dl_frame.download_list)}")
     
 class DownloadItemFrame(ctk.CTkFrame):
 
@@ -291,18 +293,19 @@ class DownloadItemFrame(ctk.CTkFrame):
         self.yt_title.grid(row=0, column=0, sticky="w", padx=(10,0), pady=(2, 0))
         
         # progress bar
-        self.progress_bar = ctk.CTkProgressBar(master=self, height=10, width=420, corner_radius=0, mode="indeterminate")
+        self.progress_bar = ctk.CTkProgressBar(master=self, height=10, width=460, corner_radius=0, mode="indeterminate")
         self.progress_bar.grid(row=1, column=0, padx=(10,0))
         self.progress_bar.set(0)
         
         # percent label
-        self.progress_count = ctk.CTkLabel(master=self, text=f"") # ! Insert progress count
+        self.progress_count = ctk.CTkLabel(master=self, text=f"")
         self.progress_count.grid(row=1, column=1, sticky="we", padx=(20,20), pady=(2,2))
 
 class DownloadListFrame(ctk.CTkFrame):
     
     download_list = []
     download_urls = []
+    downloaded_list = []
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -323,14 +326,15 @@ class DownloadListFrame(ctk.CTkFrame):
             height=160)
         self.dl_list.pack(fill=tk.BOTH, padx=10, pady=5)
         
-        self.download = ctk.CTkButton(
+        self.download_btn = ctk.CTkButton(
             master=self,
             text="Download",
             cursor="hand2",
             border_width=0,
             corner_radius=0,
-            font=('Helvetica', 13, 'bold'))
-        self.download.pack(pady=(5,5))
+            font=('Helvetica', 13, 'bold'),
+            command=self.start_download)
+        self.download_btn.pack(pady=(5,5))
 
     def update_list_with_playlist(self, playlist: list):
         if playlist:
@@ -362,6 +366,53 @@ class DownloadListFrame(ctk.CTkFrame):
                 self.dl_list.configure(state="disabled")
         
         self.master.url_frame.url_entry.delete(0, 'end')
+    
+    def start_download(self):
+        self.download_btn.configure(state="disabled")
+        self.current_dl.progress_bar.configure(mode="determinate")
+        
+        download = yt_dl.AsyncDownload()
+        download.start()
+        
+        self.monitor_download(download)
+    
+    def monitor_download(self, thread):
+        if thread.is_alive():
+            self.update_current_dl(thread.current_title, thread.count)
+            self.after(1, lambda: self.monitor_download(thread))
+        else:
+            self.download_btn.configure(state="normal")
+            self.update_ended()
+
+    
+    def update_current_dl(self, current_title:str, complete_items: int):
+        if current_title:
+            current_text = self.current_dl.yt_title
+            current_progress_text = self.current_dl.progress_count
+            total_items = len(self.download_list)
+            
+            # Update text and count
+            current_text.configure(text=f"{current_title}")
+            current_progress_text.configure(text=f"{complete_items} / {total_items}")
+            
+            # Update progress bar
+            value = (complete_items+1/total_items)
+            self.current_dl.progress_bar.set(value)
+    
+    def update_ended(self):
+        for title in self.download_list:
+            idx = self.download_list.index(title)
+            title_text = " [x] "+str(idx+1)+ "- " + title +"\n"
+            
+            # Write in the dl_list the song
+            self.dl_list.configure(state="normal")
+            self.dl_list.delete('1.0', tk.END)
+            self.dl_list.insert(f"{idx+1}.0", title_text)
+            self.dl_list.configure(state="disabled")
+        
+        self.current_dl.progress_count.configure(text="")
+        self.current_dl.yt_title.configure(text="DOWNLOAD COMPLETED")
+        
 
 class SettingsFrame(ctk.CTkFrame):
     def __init__(self, *args, **kwargs):
@@ -395,7 +446,6 @@ class App(ctk.CTk):
     WIDTH = 600
     HEIGHT = 540
     
-    download_list = []
     output_format = "mp3"
     output_dir = str(Path.home())+"\download\\"
     light_mode = "Light"
