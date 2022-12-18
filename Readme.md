@@ -6,7 +6,7 @@
 </p>
 
 <div align="center">
-    ![python](https://img.shields.io/badge/Version-1.0.0-green)
+    ![badge](https://img.shields.io/badge/Version-1.0.0-green)
 </div>
 
 ---
