@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./static/img/lunar_lotus_logo.png">
-    <img src="./static/img/lunar_lotus_logo.png">
+    <source media="(prefers-color-scheme: dark)" srcset="./static/img/lunar_lotus_logo.ico">
+    <img src="./static/img/lunar_lotus_logo.ico">
   </picture>
 </p>
 <p align="center">
@@ -23,14 +23,20 @@ This is a simple Youtube Downloader GUI application build in python with tkinter
 <div align="center">
   <p align="center">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="./static/doc_images/yt_dl_dark.png">
-      <img src="./static/doc_images/yt_dl_dark.png">
+      <source media="(prefers-color-scheme: dark)" srcset="./static/doc_images/yt_dl_dark.PNG">
+      <img src="./static/doc_images/yt_dl_dark.PNG">
     </picture>
   </p>
   <p align="center">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="./static/doc_images/yt_dl_light.png">
-      <img src="./static/doc_images/yt_dl_light.png">
+      <source media="(prefers-color-scheme: dark)" srcset="./static/doc_images/yt_dl_light.PNG">
+      <img src="./static/doc_images/yt_dl_light.PNG">
+    </picture>
+  </p>
+  <p align="center">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="./static/doc_images/yt_dl_st.PNG">
+      <img src="./static/doc_images/yt_dl_st.PNG">
     </picture>
   </p>
 </div>
