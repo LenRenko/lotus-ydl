@@ -48,6 +48,7 @@ def set_options(hook, dir: str, format: str, skip_dl: bool ) -> dict:
     yt_opts = ""
     if format == "MP3":
         yt_opts = {
+            "writethumbnail": True,
             "ignoreerrors": True,
             "format": "bestaudio/best",
             "ffmpeg_location": os.path.abspath("ffmpeg/bin"),
@@ -56,7 +57,13 @@ def set_options(hook, dir: str, format: str, skip_dl: bool ) -> dict:
                     "key": "FFmpegExtractAudio",
                     "preferredcodec": "mp3",
                     "preferredquality": "1000",
-                }
+                },
+                {
+                    'key': 'EmbedThumbnail'
+                },
+                {
+                    'key': 'FFmpegMetadata'
+                },
             ],
             "outtmpl": os.path.join(dir, "%(title)s.%(ext)s"),
             "progress_hooks": [hook],
@@ -65,11 +72,13 @@ def set_options(hook, dir: str, format: str, skip_dl: bool ) -> dict:
         }
     elif format == "MP4":
         yt_opts = {
+            "writethumbnail": True,
             "ignoreerrors": True,
             "format": "mp4",
             "outtmpl": os.path.join(dir, "%(title)s.%(ext)s"),
             "progress_hooks": [hook],
             "skip_download": skip_dl,
+            "quiet": True,
         }
 
     return yt_opts
