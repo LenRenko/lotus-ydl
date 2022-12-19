@@ -23,11 +23,11 @@ This is a simple Youtube Downloader GUI application build in python with tkinter
   <p align="left">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="./static/doc_images/yt_dl_dark.PNG">
-      <img src="./static/doc_images/yt_dl_dark.PNG" width="500" height="500">
+      <img src="./static/doc_images/yt_dl_dark.PNG" width="400" height="400">
     </picture>
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="./static/doc_images/yt_dl_light.PNG">
-      <img src="./static/doc_images/yt_dl_light.PNG" width="500" height="500">
+      <img src="./static/doc_images/yt_dl_light.PNG" width="400" height="400">
     </picture>
   </p>
   
