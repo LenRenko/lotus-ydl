@@ -42,7 +42,7 @@ This is a simple Youtube Downloader GUI application build in python with tkinter
 ### Where to get the .exe file ? 
 - You can get the exe file [here](https://github.com/LenRenko/lotus-ydl/releases) or click on release on the right
 - Extract the archive (with [winrar](https://www.win-rar.com/start.html?L=10) or [7zip](https://www.7-zip.org/download.html)) where you want on your computer
-- Go to the folder LLYTDownloader and look for the `**LLYTDownload.exe**`
+- Go to the folder LLYTDownloader and look for the `LLYTDownload.exe`
 
 ### How to use it ?
 - Go to youtube and copy the url of your favorite song or video
