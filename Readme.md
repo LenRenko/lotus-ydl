@@ -47,6 +47,7 @@ This is a simple Youtube Downloader GUI application build in python with tkinter
 ### How to use with Python ?
 - Clone the repo to your computer or download [source code](https://github.com/LenRenko/lotus-ydl/archive/refs/tags/V1.0.0.zip) and extract it where you want
 - Install requirements with `pip install -r requirements.txt`
+- Make sure you have [ffmpeg] installed
 - Launch `python main.py`
 
 ### How to use it ?
