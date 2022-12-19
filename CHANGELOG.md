@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Refactor code :arrow_upper_right:
  
  - Remove terminal console on running
-
+ - Create an installer to install the folder 
  - Improve download list display
  - Display loading when only 1 video is downloaded
  - Adjust songs counter on already downloaded song
