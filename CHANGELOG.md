@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
  - Add more format
  - Add mini tuto window with option to not show again on launch
+ - Check for buggy video ? 
+ - Check for process and thread that slowing pc ? 
 
 
 
