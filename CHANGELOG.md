@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Adjust songs counter on already downloaded song
  - Change default output folder to `Output`
  - Display warning when plyalist is private (works on not listed playlist)
+ - Handle long titles in download box
 
  - Add more format
  - Add mini tuto window with option to not show again on launch
