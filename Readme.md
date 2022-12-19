@@ -17,7 +17,7 @@
 
 ---
 
-This is a simple Youtube Downloader GUI application build in python with tkinter and TomSchimansky [customtkinter](https://github.com/TomSchimansky/CustomTkinter). I built it because I didn't found what I wanted, so made it as simple as possible. 
+This is a simple Youtube Downloader GUI application build in python with tkinter and TomSchimansky [customtkinter](https://github.com/TomSchimansky/CustomTkinter). I built it because I didn't found what I wanted, so made it as simple as possible. _Special thanks to my GF for testing it and giving improvements ideas_ 
 
 <div align="center">
   <p align="left">
