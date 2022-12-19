@@ -12,7 +12,7 @@
 
 
 <div align="center">
-  <h3> Yet another Youtube Downloader, build with Tkinter</h3>
+  <h3> Yet another simple Youtube Downloader</h3>
 </div>
 
 ---
