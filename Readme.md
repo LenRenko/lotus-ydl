@@ -46,7 +46,7 @@ This is a simple Youtube Downloader GUI application build in python with tkinter
 
 ### How to use it ?
 - Go to youtube and copy the url of your favorite song or video
-- Launch with LLYTDownloader.exe
+- Launch with `LLYTDownload.exe`
 - Follow the instructions on your screen :-> Paste your url on the entry, press ENTER or click add to add your url to download list
 - Do step 1 to 3 again if you want. 
 - When you have all your desired urls to download :-> Click DOWNLOAD button and wait for it to download. 
