@@ -21,7 +21,7 @@ class OutputTopLevel(ctk.CTkToplevel):
         self.protocol(
             "WM_DELETE_WINDOW", self.on_closing
         )
-        self.iconbitmap(os.path.abspath('static\img\lunar_lotus_logo.ico'))
+        self.iconphoto(False, tk.PhotoImage(os.path.abspath('static/img/lunar_lotus_logo.ico')))
         
         # ============ Main frame =========== #
         self.setting_frame = ctk.CTkFrame(
@@ -128,7 +128,7 @@ class ConfirmTopLevel(ctk.CTkToplevel):
         self.protocol(
             "WM_DELETE_WINDOW", self.on_closing
         )
-        self.iconbitmap(os.path.abspath("static\img\lunar_lotus_logo.ico"))
+        self.iconphoto(False, tk.PhotoImage(os.path.abspath("static/img/lunar_lotus_logo.png")))
     
         # confirm text
         self.txt_label = ctk.CTkLabel(master=self, text="This file is part of a playlist. \n Do you want to add all the playlist to download ? \n \n This can take a moment depending on playlist length", font=('Helvetica', 12, 'bold'))
@@ -216,7 +216,7 @@ class LogoFrame(ctk.CTkFrame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        self.logo_image = ctk.CTkImage(Image.open(os.path.abspath("static\img\logo_ydl.png")), 
+        self.logo_image = ctk.CTkImage(Image.open(os.path.abspath("static/img/logo_ydl.png")), 
             size=(300,120)
         )
         
@@ -394,7 +394,7 @@ class DownloadListFrame(ctk.CTkFrame):
             total_items = len(self.download_list)
             
             # Update text and count
-            current_text.configure(text=f"{current_title}")
+            current_text.configure(text=f"{self.check_title_lenght(current_title)}")
             current_progress_text.configure(text=f"{complete_items} / {total_items}")
             
             # Update progress bar
@@ -414,6 +414,10 @@ class DownloadListFrame(ctk.CTkFrame):
         self.current_dl.progress_count.configure(text="")
         self.current_dl.progress_bar.set(1)
         self.current_dl.yt_title.configure(text="DOWNLOAD COMPLETED")
+    
+    def check_title_lenght(self, title: str):
+        if len(title) > 50:
+            return title[:50] + "..."
         
 
 class SettingsFrame(ctk.CTkFrame):
@@ -463,7 +467,7 @@ class App(ctk.CTk):
         self.protocol(
             "WM_DELETE_WINDOW", self.on_closing
         )
-        self.iconbitmap(os.path.abspath("static\img\lunar_lotus_logo.ico"))
+        self.iconphoto(False, tk.PhotoImage(os.path.abspath("static/img/lunar_lotus_logo.png")))
                 
         # init options windows
         self.output_window = OutputTopLevel(self)
