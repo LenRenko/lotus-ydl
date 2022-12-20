@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Improve download list display
  - Display loading when only 1 video is downloaded
  - Adjust songs counter on already downloaded song
- - Change default output folder to `Output`
+ - :heavy_check_mark: Change default output folder to `Output`
  - Display warning when plyalist is private (works on not listed playlist)
  - :heavy_check_mark: Handle long titles in download box
 
