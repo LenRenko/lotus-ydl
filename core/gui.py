@@ -303,30 +303,54 @@ class DownloadItemFrame(ctk.CTkFrame):
         self.progress_count = ctk.CTkLabel(master=self, text=f"")
         self.progress_count.grid(row=1, column=1, sticky="we", padx=(20,20), pady=(2,2))
 
+class ListItem(ctk.CTkFrame):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.configure(border_width=1, border_color="gray20")
+        self.configure(corner_radius=0)
+        
+        self.number_box = ctk.CTkLabel(master=self, text="", font=('Helvetica', 13, "bold"), width=10)
+        self.number_box.grid(row=0, column=0, sticky="NW")
+        
+        self.title_box = ctk.CTkLabel(master=self, text="", font=('Helvetica', 13, 'bold'), width=450)
+        self.title_box.grid(sticky="W", row=0, column=1)
+        
+        self.state = ctk.CTkLabel(master=self, text="", font=('Helvetica', 11, 'bold'), width=80)
+        self.state.grid(sticky="E", row=0, column=2)
+
 class DownloadListFrame(ctk.CTkFrame):
     
     download_list = []
     download_urls = []
     downloaded_list = []
+    download_items = []
+    completed = 0
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
         # ============ Current download
         self.current_dl = DownloadItemFrame(master=self, corner_radius=0)
-        self.current_dl.pack(fill=tk.X, padx=10, pady=5)
+        self.current_dl.grid(row=0, column=0, sticky="we", padx=10, pady=5)
         
         # ============ Waiting list
         self.title_label = ctk.CTkLabel(master=self, text="Download List", font=('Helvetica', 14, 'bold'))
-        self.title_label.pack()
+        self.title_label.grid(row=1, column=0)
         
-        self.dl_list = ctk.CTkTextbox(
-            master=self,
-            corner_radius=0,
-            state="disabled",
-            fg_color="gray80",
-            height=160)
-        self.dl_list.pack(fill=tk.BOTH, padx=10, pady=5)
+        # Download list display
+        
+        self.download_list_canvas = ctk.CTkCanvas(master=self, height=160)
+        self.download_list_canvas.grid(row=2, column=0, sticky="nswe", padx=(5, 5))
+        
+        self.scrollbar = ctk.CTkScrollbar(master=self, orientation=tk.VERTICAL, command=self.download_list_canvas.yview)
+        self.scrollbar.grid(row=2, column=1, sticky=tk.E)
+        
+        self.download_list_canvas.configure(yscrollcommand=self.scrollbar.set, border=False, borderwidth=0)
+        self.download_list_canvas.bind("<Configure>", lambda e: self.download_list_canvas.configure(scrollregion=self.download_list_canvas.bbox("all")))
+        
+        self.download_list_frame = ctk.CTkFrame(master=self.download_list_canvas, border_width=0, corner_radius=0, width=600)
+        self.download_list_canvas.create_window((2,2), window=self.download_list_frame, anchor="n")
+        
         
         self.download_btn = ctk.CTkButton(
             master=self,
@@ -336,7 +360,7 @@ class DownloadListFrame(ctk.CTkFrame):
             corner_radius=0,
             font=('Helvetica', 13, 'bold'),
             command=self.start_download)
-        self.download_btn.pack(pady=(5,5))
+        self.download_btn.grid(row=3, columnspan=2, pady=(5,5))
 
     def update_list_with_playlist(self, playlist: list):
         if playlist:
@@ -344,13 +368,16 @@ class DownloadListFrame(ctk.CTkFrame):
                 if title not in self.download_list:
                     self.download_list.append(title)
                     idx = self.download_list.index(title)
-                    title_text = str(idx+1)+ " - " + title +"\n"
+                    if len(title) > 50:
+                        title = title[0:50]+"..."
                     
                     # Write in the dl_list the song
-                    self.dl_list.configure(state="normal")
-                    self.dl_list.insert(f"{idx+1}.0", title_text)
-                    self.dl_list.update()
-                    self.dl_list.configure(state="disabled")
+                    title_item = ListItem(master=self.download_list_frame)
+                    title_item.number_box.configure(text=str(idx+1))
+                    title_item.title_box.configure(text=title)
+                    title_item.pack(padx=4, pady=2, expand=True)
+                    self.download_items.append(title_item)
+                    
 
     def update_list(self, url: str, title: str):
         if url not in self.download_urls:
@@ -359,19 +386,22 @@ class DownloadListFrame(ctk.CTkFrame):
             if title not in self.download_list:
                 self.download_list.append(title)
                 idx = self.download_list.index(title)
-                title_text = str(idx+1)+ " - " + title +"\n"
+                if len(title) > 50:
+                    title = title[0:50]+"..."
                 
-                # Write in the dl_list the song
-                self.dl_list.configure(state="normal")
-                self.dl_list.insert(f"{idx+1}.0", title_text)
-                self.dl_list.update()
-                self.dl_list.configure(state="disabled")
-        
+                title_item = ListItem(master=self.download_list_frame)
+                title_item.number_box.configure(text=str(idx+1))
+                title_item.title_box.configure(text=title)
+                title_item.pack(padx=4, pady=2, fill=tk.X, expand=True, anchor=tk.W)
+                self.download_items.append(title_item)
+                
+                
         self.master.url_frame.url_entry.delete(0, 'end')
     
     def start_download(self):
         self.download_btn.configure(state="disabled")
         self.current_dl.progress_bar.configure(mode="determinate")
+        self.current_dl.yt_title.configure(text="Starting download...")
         
         download = yt_dl.AsyncDownload()
         download.start()
@@ -381,7 +411,7 @@ class DownloadListFrame(ctk.CTkFrame):
     def monitor_download(self, thread):
         if thread.is_alive():
             self.update_current_dl(thread.current_title, thread.count)
-            self.after(1, lambda: self.monitor_download(thread))
+            self.after(10, lambda: self.monitor_download(thread))
         else:
             self.download_btn.configure(state="normal")
             self.update_ended()
@@ -399,21 +429,13 @@ class DownloadListFrame(ctk.CTkFrame):
             
             # Update progress bar
             value = (complete_items/total_items)
+            self.completed += complete_items
             self.current_dl.progress_bar.set(value)
     
     def update_ended(self):
-        self.dl_list.configure(state="normal")
-        self.dl_list.delete('1.0', tk.END)
-        for title in self.download_list:
-            idx = self.download_list.index(title)
-            title_text = " [x] "+str(idx+1)+ "- " + title +"\n"
-            # Write in the dl_list the song
-            self.dl_list.insert(f"{idx+1}.0", title_text)
-            
-        self.dl_list.configure(state="disabled")
-        self.current_dl.progress_count.configure(text="")
-        self.current_dl.progress_bar.set(1)
-        self.current_dl.yt_title.configure(text="DOWNLOAD COMPLETED")
+        for items in self.download_items:
+            items.state.configure(text="DOWNLOADED")
+        self.current_dl.yt_title.configure(text="Download completed !")
     
     def check_title_lenght(self, title: str):
         if len(title) > 50:
@@ -450,7 +472,7 @@ class App(ctk.CTk):
     Main application interface
     """
     WIDTH = 600
-    HEIGHT = 540
+    HEIGHT = 570
     
     output_format = "mp3"
     output_dir = str(Path.home())+"\download\\"
