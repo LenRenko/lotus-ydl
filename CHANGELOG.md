@@ -9,11 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  
  - Remove terminal console on running
  - Create an installer to install the folder 
- - Improve download list display
- - Display loading when only 1 video is downloaded
+ - :heavy_check_mark: Improve download list display
+ - :heavy_check_mark: Display loading when only 1 video is downloaded
  - Adjust songs counter on already downloaded song
  - :heavy_check_mark: Change default output folder to `Output`
- - Display warning when plyalist is private (works on not listed playlist)
+ - Display warning when playlist is private (works on not listed playlist)
  - :heavy_check_mark: Handle long titles in download box
 
  - Add more format
