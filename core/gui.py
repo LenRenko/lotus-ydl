@@ -134,6 +134,10 @@ class ConfirmTopLevel(ctk.CTkToplevel):
         self.txt_label = ctk.CTkLabel(master=self, text="This file is part of a playlist. \n Do you want to add all the playlist to download ? \n \n This can take a moment depending on playlist length", font=('Helvetica', 12, 'bold'))
         self.txt_label.pack(pady=(20, 0))
         
+        self.txt_warning = ctk.CTkLabel(master=self, font=('Helvetica', 13, 'bold'), text="Make sure the playlist is not private ! \n Change your private playlist to 'not listed' or 'public'")
+        self.txt_warning.configure(text_color="#e36414")
+        self.txt_warning.pack()
+        
         # buttons
         self.yes_button = ctk.CTkButton(
             master=self,

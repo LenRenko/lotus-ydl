@@ -43,7 +43,6 @@ with open(os.path.abspath('config.json'), 'r') as f:
     settings = json.load(f)
 
 # =================================================================
-
 def set_options(hook, dir: str, format: str, skip_dl: bool ) -> dict:
     """
         Set options for youtube download

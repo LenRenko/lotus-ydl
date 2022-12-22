@@ -7,13 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### ToDo:
  - Refactor code :arrow_upper_right:
  
- - Remove terminal console on running
+ - :heavy_check_mark: Remove terminal console on running
  - Create an installer to install the folder 
  - :heavy_check_mark: Improve download list display
  - :heavy_check_mark: Display loading when only 1 video is downloaded
- - Adjust songs counter on already downloaded song
+ - :heavy_check_mark: Adjust songs counter on already downloaded song
  - :heavy_check_mark: Change default output folder to `Output`
- - Display warning when playlist is private (works on not listed playlist)
+ - :heavy_check_mark: Display warning when playlist is private (works on not listed playlist)
  - :heavy_check_mark: Handle long titles in download box
 
  - Add more format
@@ -21,7 +21,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Check for buggy video ? 
  - Check for process and thread that slowing pc ? 
 
+## [1.1.0] - 22-12-2022
+### Changed
 
+- Download list display
+- Output default folder
+- Remove terminal console on .exe launch
 
 ## [1.0.0] - 18-12-22
 ### Added
