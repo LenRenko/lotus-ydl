@@ -308,6 +308,7 @@ class ListItem(ctk.CTkFrame):
         super().__init__(*args, **kwargs)
         self.configure(border_width=1, border_color="gray20")
         self.configure(corner_radius=0)
+        self.configure(fg_color="gray70")
         
         self.number_box = ctk.CTkLabel(master=self, text="", font=('Helvetica', 13, "bold"), width=10)
         self.number_box.grid(row=0, column=0, sticky="NW")
@@ -340,10 +341,14 @@ class DownloadListFrame(ctk.CTkFrame):
         # Download list display
         
         self.download_list_canvas = ctk.CTkCanvas(master=self, height=160)
-        self.download_list_canvas.grid(row=2, column=0, sticky="nswe", padx=(5, 5))
+        self.download_list_canvas.grid(row=2, column=0, sticky="nsew", padx=(5, 5), )
         
-        self.scrollbar = ctk.CTkScrollbar(master=self, orientation=tk.VERTICAL, command=self.download_list_canvas.yview)
-        self.scrollbar.grid(row=2, column=1, sticky=tk.E)
+        self.scrollbar = ctk.CTkScrollbar(
+            master=self,
+            orientation=tk.VERTICAL,
+            command=self.download_list_canvas.yview,
+            corner_radius=0)
+        self.scrollbar.grid(row=2, column=1, sticky=tk.E, padx=(0, 5))
         
         self.download_list_canvas.configure(yscrollcommand=self.scrollbar.set, border=False, borderwidth=0)
         self.download_list_canvas.bind("<Configure>", lambda e: self.download_list_canvas.configure(scrollregion=self.download_list_canvas.bbox("all")))
@@ -358,9 +363,12 @@ class DownloadListFrame(ctk.CTkFrame):
             cursor="hand2",
             border_width=0,
             corner_radius=0,
-            font=('Helvetica', 13, 'bold'),
-            command=self.start_download)
+            width=150,
+            font=('Helvetica', 16, 'bold'),
+            command=self.start_download,)
         self.download_btn.grid(row=3, columnspan=2, pady=(5,5))
+        
+        self.columnconfigure(1, weight=1)
 
     def update_list_with_playlist(self, playlist: list):
         if playlist:
@@ -368,8 +376,7 @@ class DownloadListFrame(ctk.CTkFrame):
                 if title not in self.download_list:
                     self.download_list.append(title)
                     idx = self.download_list.index(title)
-                    if len(title) > 50:
-                        title = title[0:50]+"..."
+                    title = self.check_title_lenght(title)
                     
                     # Write in the dl_list the song
                     title_item = ListItem(master=self.download_list_frame)
@@ -386,16 +393,14 @@ class DownloadListFrame(ctk.CTkFrame):
             if title not in self.download_list:
                 self.download_list.append(title)
                 idx = self.download_list.index(title)
-                if len(title) > 50:
-                    title = title[0:50]+"..."
+                title = self.check_title_lenght(title)
                 
                 title_item = ListItem(master=self.download_list_frame)
                 title_item.number_box.configure(text=str(idx+1))
                 title_item.title_box.configure(text=title)
                 title_item.pack(padx=4, pady=2, fill=tk.X, expand=True, anchor=tk.W)
                 self.download_items.append(title_item)
-                
-                
+                        
         self.master.url_frame.url_entry.delete(0, 'end')
     
     def start_download(self):
@@ -436,10 +441,14 @@ class DownloadListFrame(ctk.CTkFrame):
         for items in self.download_items:
             items.state.configure(text="DOWNLOADED")
         self.current_dl.yt_title.configure(text="Download completed !")
+        self.current_dl.progress_bar.set(0)
+        self.download_list.clear()
+        yt_dl.delete_download_list()
     
     def check_title_lenght(self, title: str):
         if len(title) > 50:
             return title[:50] + "..."
+        return title
         
 
 class SettingsFrame(ctk.CTkFrame):

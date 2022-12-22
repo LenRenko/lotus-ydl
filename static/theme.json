@@ -63,7 +63,7 @@
     "border_color": ["#3E454A", "#949A9F"],
     "hover_color": ["#325882", "#14375e"],
     "text_color": ["gray14", "gray84"],
-    "text_color_disabled": ["gray60", "gray45"]
+    "text_color_disabled": ["gray45", "gray45"]
   },
   "CTkProgressBar": {
     "corner_radius": 1000,

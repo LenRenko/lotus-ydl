@@ -6,6 +6,7 @@ import json
 
 
 DOWNLOAD_LIST = [] # urls in waiting list for download
+COMPLETED_LIST = [] # urls of already downloaded songs
 YOUTUBE_BASE = "https://www.youtube.com/watch?v="
 COMPLETED = "Completed"
 DOWNLOADING = "Downloading"
@@ -170,7 +171,7 @@ class AsyncDownload(Thread):
         for song in self.download_list:
             self.status = DOWNLOADING
             self.download(song, yt_opt)
-            self.downloaded.append(song)
+            COMPLETED_LIST.append(song)
     
     def download(self, url, yt_opt):
         try:
@@ -191,4 +192,7 @@ class AsyncDownload(Thread):
             self.status = COMPLETED
 
 def delete_download_list():
-    DOWNLOAD_LIST.clear()
+    print(DOWNLOAD_LIST)
+    for i in COMPLETED_LIST:
+        DOWNLOAD_LIST.remove(i)
+    
