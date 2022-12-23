@@ -330,6 +330,7 @@ class DownloadListFrame(ctk.CTkFrame):
     downloaded_list = []
     download_items = []
     completed = 0
+    download_thread = yt_dl.AsyncDownload()
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -412,10 +413,9 @@ class DownloadListFrame(ctk.CTkFrame):
         self.current_dl.progress_bar.configure(mode="determinate")
         self.current_dl.yt_title.configure(text="Starting download...")
         
-        download = yt_dl.AsyncDownload()
-        download.start()
+        self.download_thread.start()
         
-        self.monitor_download(download)
+        self.monitor_download(self.download_thread)
     
     def monitor_download(self, thread):
         if thread.is_alive():
@@ -560,4 +560,11 @@ class App(ctk.CTk):
             json.dump(data, f)
     
     def on_closing(self, event=0):
-        self.destroy()
+        downloading = self.dl_frame.download_thread
+        if downloading.status == yt_dl.DOWNLOADING:
+            messagequit = tk.messagebox.askyesno("Quit ?", "Download still running, do you want to quit ?", icon="warning")
+            if messagequit:
+                downloading.stop()
+                self.destroy()
+        else:
+            self.destroy()

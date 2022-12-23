@@ -1,4 +1,4 @@
-from threading import Thread
+from threading import Thread, Event
 
 import os
 import yt_dlp as yt
@@ -162,6 +162,8 @@ class AsyncDownload(Thread):
         self.current_title = ""
         self.complete_titles = []
         self.count = 0
+        
+        self._stop_event = Event()
             
     def run(self):
         with open(os.path.abspath('config.json'), 'r') as f:
@@ -169,6 +171,8 @@ class AsyncDownload(Thread):
         yt_opt = set_options(self.download_hook, settings['output_dir'], settings['output_format'], skip_dl=False)
         for song in self.download_list:
             self.status = DOWNLOADING
+            if self._stop_event.is_set():
+                break 
             self.download(song, yt_opt)
             COMPLETED_LIST.append(song)
     
@@ -189,9 +193,12 @@ class AsyncDownload(Thread):
             pass
         if d["status"] == "finished":
             self.status = COMPLETED
+    
+    def stop(self):
+        self._stop_event.set()
+        
 
 def delete_download_list():
-    print(DOWNLOAD_LIST)
     for i in COMPLETED_LIST:
         DOWNLOAD_LIST.remove(i)
     
