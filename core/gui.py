@@ -28,7 +28,7 @@ class OutputTopLevel(ctk.CTkToplevel):
             master=self,
             border_width=0,
             corner_radius=0)
-        self.setting_frame.grid(row=0, column=0, pady=(1, 1), sticky="nsew")
+        self.setting_frame.pack()
         
         # ============ Output ============ #
         
@@ -37,13 +37,13 @@ class OutputTopLevel(ctk.CTkToplevel):
             master=self.setting_frame,
             text="Output Folder",
             font=('Helvetica', 14, 'bold'))
-        output_dis_label.grid(row=0, padx=20, pady=5, sticky="we")
+        output_dis_label.pack(pady=5)
         
         # directory display label
         self.output_dis_label = ctk.CTkLabel(
             master=self.setting_frame,
             text=self.master.output_dir)
-        self.output_dis_label.grid(row=1, padx=20, pady=5, sticky="we")
+        self.output_dis_label.pack(pady=5)
         
          # Choose button
         self.output_button = ctk.CTkButton(
@@ -53,7 +53,7 @@ class OutputTopLevel(ctk.CTkToplevel):
             border_width=0,
             corner_radius=0,
             command=self.set_output_dir)
-        self.output_button.grid(row=2, sticky="we", padx=80, pady=5)
+        self.output_button.pack(pady=5)
 
         # ============ Format ============ #
         
@@ -62,7 +62,7 @@ class OutputTopLevel(ctk.CTkToplevel):
             master=self.setting_frame,
             text="Format",
             font=('Helvetica', 14, 'bold'))
-        format_dis_label.grid(row=4, column=0, padx=20, pady=5, sticky="we")
+        format_dis_label.pack(pady=5)
 
         self.format_menu = ctk.CTkOptionMenu(
             master=self.setting_frame, 
@@ -70,7 +70,7 @@ class OutputTopLevel(ctk.CTkToplevel):
             corner_radius=0,
             width=150,
             command=self.set_format_choice)
-        self.format_menu.grid(row=5, column=0, padx=20, pady=(10,10), sticky="")
+        self.format_menu.pack(pady=5)
         
         # ============ DARK MODE ============ #
         self.dark_mode = ctk.CTkSwitch(
@@ -80,7 +80,7 @@ class OutputTopLevel(ctk.CTkToplevel):
             offvalue="Light",
             corner_radius=2)
         self.dark_mode.configure(command=self.switch_event)
-        self.dark_mode.grid(row=6, column=0, padx=20, pady=(10,10))
+        self.dark_mode.pack(pady=5)
         
     
     def switch_event(self):
@@ -225,7 +225,7 @@ class LogoFrame(ctk.CTkFrame):
         )
         
         self.image_label = ctk.CTkLabel(master=self, image=self.logo_image, text="")
-        self.image_label.grid(row=0, column=0, sticky="nswe", ipadx=150)
+        self.image_label.grid(row=0, column=0, sticky="nswe", ipadx=180)
         
 class URLEntryFrame(ctk.CTkFrame):
     """
@@ -299,7 +299,7 @@ class DownloadItemFrame(ctk.CTkFrame):
         self.yt_title.grid(row=0, column=0, sticky="w", padx=(10,0), pady=(2, 0))
         
         # progress bar
-        self.progress_bar = ctk.CTkProgressBar(master=self, height=10, width=460, corner_radius=0, mode="indeterminate")
+        self.progress_bar = ctk.CTkProgressBar(master=self, height=10, width=500, corner_radius=0, mode="indeterminate")
         self.progress_bar.grid(row=1, column=0, padx=(10,0))
         self.progress_bar.set(0)
         
@@ -315,7 +315,7 @@ class ListItem(ctk.CTkFrame):
         self.configure(fg_color="gray70")
         
         self.number_box = ctk.CTkLabel(master=self, text="", font=('Helvetica', 13, "bold"), width=10)
-        self.number_box.grid(row=0, column=0, sticky="NW")
+        self.number_box.grid(row=0, column=0, sticky="nw")
         
         self.title_box = ctk.CTkLabel(master=self, text="", font=('Helvetica', 13, 'bold'), width=450)
         self.title_box.grid(sticky="W", row=0, column=1)
@@ -337,16 +337,16 @@ class DownloadListFrame(ctk.CTkFrame):
         
         # ============ Current download
         self.current_dl = DownloadItemFrame(master=self, corner_radius=0)
-        self.current_dl.grid(row=0, column=0, sticky="we", padx=10, pady=5)
+        self.current_dl.grid(row=0, column=0, sticky="we", padx=10, pady=5, columnspan=2)
         
         # ============ Waiting list
         self.title_label = ctk.CTkLabel(master=self, text="Download List", font=('Helvetica', 14, 'bold'))
-        self.title_label.grid(row=1, column=0)
+        self.title_label.grid(row=1, column=0, columnspan=2)
         
         # Download list display
         
         self.download_list_canvas = ctk.CTkCanvas(master=self, height=160)
-        self.download_list_canvas.grid(row=2, column=0, sticky="nsew", padx=(5, 5), )
+        self.download_list_canvas.grid(row=2, column=0, sticky="nswe", padx=(5, 5), columnspan=2)
         
         self.scrollbar = ctk.CTkScrollbar(
             master=self,
@@ -358,7 +358,7 @@ class DownloadListFrame(ctk.CTkFrame):
         self.download_list_canvas.configure(yscrollcommand=self.scrollbar.set, border=False, borderwidth=0)
         self.download_list_canvas.bind("<Configure>", lambda e: self.download_list_canvas.configure(scrollregion=self.download_list_canvas.bbox("all")))
         
-        self.download_list_frame = ctk.CTkFrame(master=self.download_list_canvas, border_width=0, corner_radius=0, width=600)
+        self.download_list_frame = ctk.CTkFrame(master=self.download_list_canvas, border_width=0, corner_radius=0, width=640)
         self.download_list_canvas.create_window((2,2), window=self.download_list_frame, anchor="n")
         
         
@@ -409,13 +409,17 @@ class DownloadListFrame(ctk.CTkFrame):
         self.master.url_frame.url_entry.delete(0, 'end')
     
     def start_download(self):
-        self.download_btn.configure(state="disabled")
-        self.current_dl.progress_bar.configure(mode="determinate")
-        self.current_dl.yt_title.configure(text="Starting download...")
-        
-        self.download_thread.start()
-        
-        self.monitor_download(self.download_thread)
+        if yt_dl.DOWNLOAD_LIST:
+            self.download_btn.configure(state="disabled")
+            self.current_dl.progress_bar.configure(mode="determinate")
+            self.current_dl.yt_title.configure(text="Starting download...")
+            
+            if self.download_thread.is_alive():
+                pass
+            else:
+                self.download_thread.start()
+            
+            self.monitor_download(self.download_thread)
     
     def monitor_download(self, thread):
         if thread.is_alive():
@@ -485,7 +489,7 @@ class App(ctk.CTk):
     """
     Main application interface
     """
-    WIDTH = 600
+    WIDTH = 640
     HEIGHT = 570
     
     output_format = "mp3"
@@ -515,19 +519,19 @@ class App(ctk.CTk):
         
         # ============ LOGO FRAME ========== #
         self.logo_frame = LogoFrame(master=self)
-        self.logo_frame.grid(row=0, column=0, sticky="we")
+        self.logo_frame.pack(fill=tk.X)
         
         # ============ TOP FRAME =========== #
         self.url_frame = URLEntryFrame(master=self, corner_radius=0)
-        self.url_frame.grid(row=1, column=0, sticky="we")
+        self.url_frame.pack(fill=tk.X)
         
         # ============ URLs display FRAME =========== #
         self.dl_frame = DownloadListFrame(master=self, corner_radius=0)
-        self.dl_frame.grid(row=2, column=0, sticky="we")
+        self.dl_frame.pack(fill=tk.X)
         
         # ============ BOTTOM FRAME =========== #
         self.bot_frame = SettingsFrame(master=self, corner_radius=0)
-        self.bot_frame.grid(row=3, column=0, pady=2, sticky="we")
+        self.bot_frame.pack(pady=2, fill=tk.X)
 
     
     def on_open_settings(self):
