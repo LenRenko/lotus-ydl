@@ -66,7 +66,7 @@ class OutputTopLevel(ctk.CTkToplevel):
 
         self.format_menu = ctk.CTkOptionMenu(
             master=self.setting_frame, 
-            values=["MP3", "MP4"],
+            values=[x.value for x in yt_dl.Format],
             corner_radius=0,
             width=150,
             command=self.set_format_choice)
@@ -446,6 +446,7 @@ class DownloadListFrame(ctk.CTkFrame):
             items.state.configure(text="DOWNLOADED")
         self.current_dl.yt_title.configure(text="Download completed !")
         self.current_dl.progress_bar.set(0)
+        self.current_dl.progress_count.configure(text="")
         self.download_list.clear()
         yt_dl.delete_download_list()
     
@@ -537,6 +538,7 @@ class App(ctk.CTk):
                 self.output_window.dark_mode.deselect()
             else:
                 self.output_window.dark_mode.select()
+        self.output_window.format_menu.set(self.output_format)
 
     def init_settings(self):
         with open(os.path.abspath('config.json')) as f:
