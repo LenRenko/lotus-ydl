@@ -16,7 +16,7 @@ class OutputTopLevel(ctk.CTkToplevel):
         super().__init__(*args, **kwargs)
         
         self.title("Settings")
-        self.geometry("300x250+820+300")
+        self.geometry("350x250+820+300")
         self.resizable(0,0)
         self.protocol(
             "WM_DELETE_WINDOW", self.on_closing
@@ -26,9 +26,9 @@ class OutputTopLevel(ctk.CTkToplevel):
         # ============ Main frame =========== #
         self.setting_frame = ctk.CTkFrame(
             master=self,
-            border_width=1,
+            border_width=0,
             corner_radius=0)
-        self.setting_frame.grid(row=0, column=0, pady=(1, 10))
+        self.setting_frame.grid(row=0, column=0, pady=(1, 1), sticky="nsew")
         
         # ============ Output ============ #
         

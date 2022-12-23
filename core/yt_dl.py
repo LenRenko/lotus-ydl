@@ -70,7 +70,7 @@ def set_options(hook, dir: str, format: str, skip_dl: bool ) -> dict:
         "quiet": True,
     }
     
-    if format in [Format.MP4.value, Format.MOV.value, Format.AVI.value, Format.MKV.value]:
+    if format in [Format.MP4.value, Format.AVI.value, Format.MKV.value]:
         opts["format"] = Format[format].value
     elif format in [Format.MP3.value]:
         opts["format"] = "bestaudio/best"
