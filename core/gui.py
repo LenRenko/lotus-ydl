@@ -296,7 +296,7 @@ class DownloadItemFrame(ctk.CTkFrame):
             master=self,
             text=f"",
             font=('Helvetica', 14, 'bold'))
-        self.yt_title.grid(row=0, column=0, sticky="w", padx=(10,0), pady=(2, 0))
+        self.yt_title.grid(row=0, column=0, sticky="we", padx=(10,0), pady=(2, 0))
         
         # progress bar
         self.progress_bar = ctk.CTkProgressBar(master=self, height=10, width=500, corner_radius=0, mode="indeterminate")
@@ -480,7 +480,8 @@ class SettingsFrame(ctk.CTkFrame):
             corner_radius=0,
             image=setting_icon,
             compound=tk.LEFT,
-            width=20
+            width=20,
+            height=24
         )
         self.setting_button.configure(command=self.master.on_open_settings)
         self.setting_button.pack(side=tk.RIGHT, padx=(0, 10), pady=(1,4))
