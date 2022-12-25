@@ -128,8 +128,9 @@ class AsyncExtractPlaylist(Thread):
                 
                 for songs in info['entries']:
                     song_url = YOUTUBE_BASE+str(songs['id'])
-                    DOWNLOAD_LIST.append(song_url)
-                    self.playlist_titles.append(songs['title'])
+                    if song_url not in DOWNLOAD_LIST and song_url not in COMPLETED_LIST:
+                        DOWNLOAD_LIST.append(song_url)
+                        self.playlist_titles.append(songs['title'])
                 return self.playlist_titles
         except yt.utils.DownloadError:
             raise URLError
@@ -147,7 +148,9 @@ class AsyncExtractSongInfo(Thread):
         with open(os.path.abspath('config.json'), 'r') as f:
             settings = json.load(f)
         yt_opt = set_options(None, settings['output_dir'], settings['output_format'], skip_dl=True)
-        DOWNLOAD_LIST.append(self.url)
+        
+        if self.url not in DOWNLOAD_LIST and self.url not in COMPLETED_LIST:
+            DOWNLOAD_LIST.append(self.url)
         try:
             with yt.YoutubeDL(yt_opt) as ydl:
                 info = ydl.extract_info(self.url, download=False)
@@ -211,5 +214,6 @@ class AsyncDownload(Thread):
 
 def delete_download_list():
     for i in COMPLETED_LIST:
-        DOWNLOAD_LIST.remove(i)
+        if i in DOWNLOAD_LIST:
+            DOWNLOAD_LIST.remove(i)
     

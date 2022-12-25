@@ -273,6 +273,8 @@ class URLEntryFrame(ctk.CTkFrame):
                         song_thread.start()
                         
                         self.monitor(song_thread)
+                    else:
+                        self.master.dl_frame.current_dl.yt_title.configure(text="URL already in downloading list or already downloaded")
 
             else:
                 self.master.dl_frame.current_dl.yt_title.configure(text="Invalid youtube URL")
@@ -414,10 +416,10 @@ class DownloadListFrame(ctk.CTkFrame):
             self.current_dl.progress_bar.configure(mode="determinate")
             self.current_dl.yt_title.configure(text="Starting download...")
             
-            if self.download_thread.is_alive():
-                pass
-            else:
-                self.download_thread.start()
+            if not self.download_thread.is_alive():
+                print(self.download_thread)
+                download_thread = yt_dl.AsyncDownload()
+                download_thread.start()
             
             self.monitor_download(self.download_thread)
     
