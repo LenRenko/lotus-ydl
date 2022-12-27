@@ -21,7 +21,7 @@ class OutputTopLevel(ctk.CTkToplevel):
         self.protocol(
             "WM_DELETE_WINDOW", self.on_closing
         )
-        self.iconphoto(False, tk.PhotoImage(os.path.abspath('static/img/lunar_lotus_logo.ico')))
+        self.iconphoto(False, tk.PhotoImage(master=self, file=os.path.abspath('static/img/lunar_lotus_logo.png')))
         
         # ============ Main frame =========== #
         self.setting_frame = ctk.CTkFrame(
@@ -128,7 +128,7 @@ class ConfirmTopLevel(ctk.CTkToplevel):
         self.protocol(
             "WM_DELETE_WINDOW", self.on_closing
         )
-        self.iconphoto(False, tk.PhotoImage(os.path.abspath("static/img/lunar_lotus_logo.png")))
+        self.iconphoto(False, tk.PhotoImage(master=self,file=os.path.abspath("static/img/lunar_lotus_logo.png")))
     
         # confirm text
         self.txt_label = ctk.CTkLabel(master=self, text="This file is part of a playlist. \n Do you want to add all the playlist to download ? \n \n This can take a moment depending on playlist length", font=('Helvetica', 12, 'bold'))
@@ -417,7 +417,6 @@ class DownloadListFrame(ctk.CTkFrame):
             self.current_dl.yt_title.configure(text="Starting download...")
             
             if not self.download_thread.is_alive():
-                print(self.download_thread)
                 download_thread = yt_dl.AsyncDownload()
                 download_thread.start()
             
@@ -454,7 +453,6 @@ class DownloadListFrame(ctk.CTkFrame):
         self.current_dl.progress_bar.set(0)
         self.current_dl.progress_count.configure(text="")
         self.download_list.clear()
-        yt_dl.delete_download_list()
     
     def check_title_lenght(self, title: str):
         if len(title) > 50:
@@ -510,7 +508,8 @@ class App(ctk.CTk):
         self.protocol(
             "WM_DELETE_WINDOW", self.on_closing
         )
-        self.iconphoto(False, tk.PhotoImage(os.path.abspath("static/img/lunar_lotus_logo.png")))
+        logo_image = tk.PhotoImage(master=self, file=os.path.abspath("static/img/lunar_lotus_logo.png"))
+        self.iconphoto(False, logo_image)
                 
         # init options windows
         self.output_window = OutputTopLevel(self)

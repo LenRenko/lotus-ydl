@@ -183,12 +183,15 @@ class AsyncDownload(Thread):
             settings = json.load(f)
         yt_opt = set_options(self.download_hook, settings['output_dir'], settings['output_format'], skip_dl=False)
         for song in self.download_list:
-            self.status = DOWNLOADING
-            if self._stop_event.is_set():
-                self.status = COMPLETED
-                break 
-            self.download(song, yt_opt)
-            COMPLETED_LIST.append(song)
+            if song not in COMPLETED_LIST:
+                self.status = DOWNLOADING
+                if self._stop_event.is_set():
+                    print("here")
+                    self.status = COMPLETED
+                    break 
+                else:
+                    self.download(song, yt_opt)
+                    COMPLETED_LIST.append(song)
     
     def download(self, url, yt_opt):
         try:
@@ -210,10 +213,4 @@ class AsyncDownload(Thread):
     
     def stop(self):
         self._stop_event.set()
-        
-
-def delete_download_list():
-    for i in COMPLETED_LIST:
-        if i in DOWNLOAD_LIST:
-            DOWNLOAD_LIST.remove(i)
     
