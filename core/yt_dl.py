@@ -1,4 +1,6 @@
-from threading import Thread
+from __future__ import unicode_literals
+from threading import Thread, Event
+from enum import Enum
 
 import os
 import yt_dlp as yt
@@ -6,22 +8,27 @@ import json
 
 
 DOWNLOAD_LIST = [] # urls in waiting list for download
+COMPLETED_LIST = [] # urls of already downloaded songs
 YOUTUBE_BASE = "https://www.youtube.com/watch?v="
 COMPLETED = "Completed"
 DOWNLOADING = "Downloading"
 output_format = "MP3"
-output_dir = os.path.expanduser("~/YTDownloadOutput/")
+output_dir = os.path.expanduser("~/YTDownloader/YTDownloadOutput/")
+
+
+class Format(Enum):
+    MP3 = "MP3"
+    WAV = "WAV"
+    M4A = "M4A"
+    OGG = "OGG"
+    FLAC = "FLAC"
+    MP4 = "MP4"
+    AVI = "AVI"
+    MKV = "MKV"
 
 class URLError(Exception):
     """Raised when bad url is entered for download"""
     pass
-
-class ThreadWithResult(Thread):
-    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}, *, daemon=None):
-        def function():
-            self.result = target(*args, **kwargs)
-        super().__init__(group=group, target=function, name=name, daemon=daemon)
-
 
 
 def check_config():
@@ -42,48 +49,51 @@ with open(os.path.abspath('config.json'), 'r') as f:
     settings = json.load(f)
 
 # =================================================================
-
 def set_options(hook, dir: str, format: str, skip_dl: bool ) -> dict:
     """
         Set options for youtube download
     """
-    yt_opts = ""
-    if format == "MP3":
-        yt_opts = {
-            "writethumbnail": True,
-            "ignoreerrors": True,
-            "format": "bestaudio/best",
-            "ffmpeg_location": os.path.abspath("ffmpeg/bin"),
-            "postprocessors": [
-                {
-                    "key": "FFmpegExtractAudio",
-                    "preferredcodec": "mp3",
-                    "preferredquality": "1000",
-                },
-                {
-                    'key': 'EmbedThumbnail'
-                },
-                {
-                    'key': 'FFmpegMetadata'
-                },
-            ],
-            "outtmpl": os.path.join(dir, "%(title)s.%(ext)s"),
-            "progress_hooks": [hook],
-            "skip_download": skip_dl,
-            "quiet": True,
-        }
-    elif format == "MP4":
-        yt_opts = {
-            "writethumbnail": True,
-            "ignoreerrors": True,
-            "format": "mp4",
-            "outtmpl": os.path.join(dir, "%(title)s.%(ext)s"),
-            "progress_hooks": [hook],
-            "skip_download": skip_dl,
-            "quiet": True,
-        }
-
-    return yt_opts
+    
+    opts = {
+        "writethumbnail": True,
+        "ignoreerrors": True,
+        "outtmpl": os.path.join(dir, "%(title)s.%(ext)s"),
+        "progress_hooks": [hook],
+        "ffmpeg_location": os.path.abspath("ffmpeg/bin"),
+        "skip_download": skip_dl,
+        "quiet": True,
+    }
+    
+    if format in [Format.MP4.value, Format.AVI.value, Format.MKV.value]:
+        opts["format"] = Format[format].value
+    elif format in [Format.MP3.value]:
+        opts["format"] = "bestaudio/best"
+        opts["postprocessors"] = [
+            {
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": Format[format].value,
+                "preferredquality": "1000",
+            },
+            {
+                'key': 'EmbedThumbnail',
+            },
+            {
+                'key': 'FFmpegMetadata',
+            },
+        ]
+    else:
+        opts["format"] = "bestaudio/best"
+        opts["postprocessors"] = [
+            {
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": Format[format].value,
+                "preferredquality": "1000",
+            },
+            {
+                'key': 'FFmpegMetadata',
+            },
+        ]
+    return opts
 
 
 def is_playlist(url: str):
@@ -118,8 +128,9 @@ class AsyncExtractPlaylist(Thread):
                 
                 for songs in info['entries']:
                     song_url = YOUTUBE_BASE+str(songs['id'])
-                    DOWNLOAD_LIST.append(song_url)
-                    self.playlist_titles.append(songs['title'])
+                    if song_url not in DOWNLOAD_LIST and song_url not in COMPLETED_LIST:
+                        DOWNLOAD_LIST.append(song_url)
+                        self.playlist_titles.append(songs['title'])
                 return self.playlist_titles
         except yt.utils.DownloadError:
             raise URLError
@@ -137,7 +148,9 @@ class AsyncExtractSongInfo(Thread):
         with open(os.path.abspath('config.json'), 'r') as f:
             settings = json.load(f)
         yt_opt = set_options(None, settings['output_dir'], settings['output_format'], skip_dl=True)
-        DOWNLOAD_LIST.append(self.url)
+        
+        if self.url not in DOWNLOAD_LIST and self.url not in COMPLETED_LIST:
+            DOWNLOAD_LIST.append(self.url)
         try:
             with yt.YoutubeDL(yt_opt) as ydl:
                 info = ydl.extract_info(self.url, download=False)
@@ -156,21 +169,29 @@ class AsyncDownload(Thread):
     def __init__(self):
         super().__init__()
 
-        self.status = DOWNLOADING
+        self.status = COMPLETED
         self.download_list = DOWNLOAD_LIST
         self.downloaded = []
         self.current_title = ""
         self.complete_titles = []
         self.count = 0
+        
+        self._stop_event = Event()
             
     def run(self):
         with open(os.path.abspath('config.json'), 'r') as f:
             settings = json.load(f)
         yt_opt = set_options(self.download_hook, settings['output_dir'], settings['output_format'], skip_dl=False)
         for song in self.download_list:
-            self.status = DOWNLOADING
-            self.download(song, yt_opt)
-            self.downloaded.append(song)
+            if song not in COMPLETED_LIST:
+                self.status = DOWNLOADING
+                if self._stop_event.is_set():
+                    print("here")
+                    self.status = COMPLETED
+                    break 
+                else:
+                    self.download(song, yt_opt)
+                    COMPLETED_LIST.append(song)
     
     def download(self, url, yt_opt):
         try:
@@ -189,6 +210,7 @@ class AsyncDownload(Thread):
             pass
         if d["status"] == "finished":
             self.status = COMPLETED
-
-def delete_download_list():
-    DOWNLOAD_LIST.clear()
+    
+    def stop(self):
+        self._stop_event.set()
+    

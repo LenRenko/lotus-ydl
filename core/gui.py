@@ -16,19 +16,19 @@ class OutputTopLevel(ctk.CTkToplevel):
         super().__init__(*args, **kwargs)
         
         self.title("Settings")
-        self.geometry("300x250+820+300")
+        self.geometry("350x250+820+300")
         self.resizable(0,0)
         self.protocol(
             "WM_DELETE_WINDOW", self.on_closing
         )
-        self.iconbitmap(os.path.abspath('static\img\lunar_lotus_logo.ico'))
+        self.iconphoto(False, tk.PhotoImage(master=self, file=os.path.abspath('static/img/lunar_lotus_logo.png')))
         
         # ============ Main frame =========== #
         self.setting_frame = ctk.CTkFrame(
             master=self,
-            border_width=1,
+            border_width=0,
             corner_radius=0)
-        self.setting_frame.grid(row=0, column=0, pady=(1, 10))
+        self.setting_frame.pack()
         
         # ============ Output ============ #
         
@@ -37,13 +37,13 @@ class OutputTopLevel(ctk.CTkToplevel):
             master=self.setting_frame,
             text="Output Folder",
             font=('Helvetica', 14, 'bold'))
-        output_dis_label.grid(row=0, padx=20, pady=5, sticky="we")
+        output_dis_label.pack(pady=5)
         
         # directory display label
         self.output_dis_label = ctk.CTkLabel(
             master=self.setting_frame,
             text=self.master.output_dir)
-        self.output_dis_label.grid(row=1, padx=20, pady=5, sticky="we")
+        self.output_dis_label.pack(pady=5)
         
          # Choose button
         self.output_button = ctk.CTkButton(
@@ -53,7 +53,7 @@ class OutputTopLevel(ctk.CTkToplevel):
             border_width=0,
             corner_radius=0,
             command=self.set_output_dir)
-        self.output_button.grid(row=2, sticky="we", padx=80, pady=5)
+        self.output_button.pack(pady=5)
 
         # ============ Format ============ #
         
@@ -62,15 +62,15 @@ class OutputTopLevel(ctk.CTkToplevel):
             master=self.setting_frame,
             text="Format",
             font=('Helvetica', 14, 'bold'))
-        format_dis_label.grid(row=4, column=0, padx=20, pady=5, sticky="we")
+        format_dis_label.pack(pady=5)
 
         self.format_menu = ctk.CTkOptionMenu(
             master=self.setting_frame, 
-            values=["MP3", "MP4"],
+            values=[x.value for x in yt_dl.Format],
             corner_radius=0,
             width=150,
             command=self.set_format_choice)
-        self.format_menu.grid(row=5, column=0, padx=20, pady=(10,10), sticky="")
+        self.format_menu.pack(pady=5)
         
         # ============ DARK MODE ============ #
         self.dark_mode = ctk.CTkSwitch(
@@ -80,7 +80,7 @@ class OutputTopLevel(ctk.CTkToplevel):
             offvalue="Light",
             corner_radius=2)
         self.dark_mode.configure(command=self.switch_event)
-        self.dark_mode.grid(row=6, column=0, padx=20, pady=(10,10))
+        self.dark_mode.pack(pady=5)
         
     
     def switch_event(self):
@@ -128,11 +128,15 @@ class ConfirmTopLevel(ctk.CTkToplevel):
         self.protocol(
             "WM_DELETE_WINDOW", self.on_closing
         )
-        self.iconbitmap(os.path.abspath("static\img\lunar_lotus_logo.ico"))
+        self.iconphoto(False, tk.PhotoImage(master=self,file=os.path.abspath("static/img/lunar_lotus_logo.png")))
     
         # confirm text
         self.txt_label = ctk.CTkLabel(master=self, text="This file is part of a playlist. \n Do you want to add all the playlist to download ? \n \n This can take a moment depending on playlist length", font=('Helvetica', 12, 'bold'))
         self.txt_label.pack(pady=(20, 0))
+        
+        self.txt_warning = ctk.CTkLabel(master=self, font=('Helvetica', 13, 'bold'), text="Make sure the playlist is not private ! \n Change your private playlist to 'not listed' or 'public'")
+        self.txt_warning.configure(text_color="#e36414")
+        self.txt_warning.pack()
         
         # buttons
         self.yes_button = ctk.CTkButton(
@@ -216,12 +220,12 @@ class LogoFrame(ctk.CTkFrame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        self.logo_image = ctk.CTkImage(Image.open(os.path.abspath("static\img\logo_ydl.png")), 
+        self.logo_image = ctk.CTkImage(Image.open(os.path.abspath("static/img/logo_ydl.png")), 
             size=(300,120)
         )
         
         self.image_label = ctk.CTkLabel(master=self, image=self.logo_image, text="")
-        self.image_label.grid(row=0, column=0, sticky="nswe", ipadx=150)
+        self.image_label.grid(row=0, column=0, sticky="nswe", ipadx=180)
         
 class URLEntryFrame(ctk.CTkFrame):
     """
@@ -269,6 +273,8 @@ class URLEntryFrame(ctk.CTkFrame):
                         song_thread.start()
                         
                         self.monitor(song_thread)
+                    else:
+                        self.master.dl_frame.current_dl.yt_title.configure(text="URL already in downloading list or already downloaded")
 
             else:
                 self.master.dl_frame.current_dl.yt_title.configure(text="Invalid youtube URL")
@@ -292,10 +298,10 @@ class DownloadItemFrame(ctk.CTkFrame):
             master=self,
             text=f"",
             font=('Helvetica', 14, 'bold'))
-        self.yt_title.grid(row=0, column=0, sticky="w", padx=(10,0), pady=(2, 0))
+        self.yt_title.grid(row=0, column=0, sticky="we", padx=(10,0), pady=(2, 0))
         
         # progress bar
-        self.progress_bar = ctk.CTkProgressBar(master=self, height=10, width=460, corner_radius=0, mode="indeterminate")
+        self.progress_bar = ctk.CTkProgressBar(master=self, height=10, width=500, corner_radius=0, mode="indeterminate")
         self.progress_bar.grid(row=1, column=0, padx=(10,0))
         self.progress_bar.set(0)
         
@@ -303,30 +309,60 @@ class DownloadItemFrame(ctk.CTkFrame):
         self.progress_count = ctk.CTkLabel(master=self, text=f"")
         self.progress_count.grid(row=1, column=1, sticky="we", padx=(20,20), pady=(2,2))
 
+class ListItem(ctk.CTkFrame):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.configure(border_width=1, border_color="gray20")
+        self.configure(corner_radius=0)
+        self.configure(fg_color="gray70")
+        
+        self.number_box = ctk.CTkLabel(master=self, text="", font=('Helvetica', 13, "bold"), width=10)
+        self.number_box.grid(row=0, column=0, sticky="nw")
+        
+        self.title_box = ctk.CTkLabel(master=self, text="", font=('Helvetica', 13, 'bold'), width=450)
+        self.title_box.grid(sticky="W", row=0, column=1)
+        
+        self.state = ctk.CTkLabel(master=self, text="", font=('Helvetica', 11, 'bold'), width=80)
+        self.state.grid(sticky="E", row=0, column=2)
+
 class DownloadListFrame(ctk.CTkFrame):
     
     download_list = []
     download_urls = []
     downloaded_list = []
+    download_items = []
+    completed = 0
+    download_thread = yt_dl.AsyncDownload()
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
         # ============ Current download
         self.current_dl = DownloadItemFrame(master=self, corner_radius=0)
-        self.current_dl.pack(fill=tk.X, padx=10, pady=5)
+        self.current_dl.grid(row=0, column=0, sticky="we", padx=10, pady=5, columnspan=2)
         
         # ============ Waiting list
         self.title_label = ctk.CTkLabel(master=self, text="Download List", font=('Helvetica', 14, 'bold'))
-        self.title_label.pack()
+        self.title_label.grid(row=1, column=0, columnspan=2)
         
-        self.dl_list = ctk.CTkTextbox(
+        # Download list display
+        
+        self.download_list_canvas = ctk.CTkCanvas(master=self, height=160)
+        self.download_list_canvas.grid(row=2, column=0, sticky="nswe", padx=(5, 5), columnspan=2)
+        
+        self.scrollbar = ctk.CTkScrollbar(
             master=self,
-            corner_radius=0,
-            state="disabled",
-            fg_color="gray80",
-            height=160)
-        self.dl_list.pack(fill=tk.BOTH, padx=10, pady=5)
+            orientation=tk.VERTICAL,
+            command=self.download_list_canvas.yview,
+            corner_radius=0)
+        self.scrollbar.grid(row=2, column=1, sticky=tk.E, padx=(0, 5))
+        
+        self.download_list_canvas.configure(yscrollcommand=self.scrollbar.set, border=False, borderwidth=0)
+        self.download_list_canvas.bind("<Configure>", lambda e: self.download_list_canvas.configure(scrollregion=self.download_list_canvas.bbox("all")))
+        
+        self.download_list_frame = ctk.CTkFrame(master=self.download_list_canvas, border_width=0, corner_radius=0, width=640)
+        self.download_list_canvas.create_window((2,2), window=self.download_list_frame, anchor="n")
+        
         
         self.download_btn = ctk.CTkButton(
             master=self,
@@ -334,9 +370,12 @@ class DownloadListFrame(ctk.CTkFrame):
             cursor="hand2",
             border_width=0,
             corner_radius=0,
-            font=('Helvetica', 13, 'bold'),
-            command=self.start_download)
-        self.download_btn.pack(pady=(5,5))
+            width=150,
+            font=('Helvetica', 16, 'bold'),
+            command=self.start_download,)
+        self.download_btn.grid(row=3, columnspan=2, pady=(5,5))
+        
+        self.columnconfigure(1, weight=1)
 
     def update_list_with_playlist(self, playlist: list):
         if playlist:
@@ -344,13 +383,15 @@ class DownloadListFrame(ctk.CTkFrame):
                 if title not in self.download_list:
                     self.download_list.append(title)
                     idx = self.download_list.index(title)
-                    title_text = str(idx+1)+ " - " + title +"\n"
+                    title = self.check_title_lenght(title)
                     
                     # Write in the dl_list the song
-                    self.dl_list.configure(state="normal")
-                    self.dl_list.insert(f"{idx+1}.0", title_text)
-                    self.dl_list.update()
-                    self.dl_list.configure(state="disabled")
+                    title_item = ListItem(master=self.download_list_frame)
+                    title_item.number_box.configure(text=str(idx+1))
+                    title_item.title_box.configure(text=title)
+                    title_item.pack(padx=4, pady=2, expand=True)
+                    self.download_items.append(title_item)
+                    
 
     def update_list(self, url: str, title: str):
         if url not in self.download_urls:
@@ -359,29 +400,32 @@ class DownloadListFrame(ctk.CTkFrame):
             if title not in self.download_list:
                 self.download_list.append(title)
                 idx = self.download_list.index(title)
-                title_text = str(idx+1)+ " - " + title +"\n"
+                title = self.check_title_lenght(title)
                 
-                # Write in the dl_list the song
-                self.dl_list.configure(state="normal")
-                self.dl_list.insert(f"{idx+1}.0", title_text)
-                self.dl_list.update()
-                self.dl_list.configure(state="disabled")
-        
+                title_item = ListItem(master=self.download_list_frame)
+                title_item.number_box.configure(text=str(idx+1))
+                title_item.title_box.configure(text=title)
+                title_item.pack(padx=4, pady=2, fill=tk.X, expand=True, anchor=tk.W)
+                self.download_items.append(title_item)
+                        
         self.master.url_frame.url_entry.delete(0, 'end')
     
     def start_download(self):
-        self.download_btn.configure(state="disabled")
-        self.current_dl.progress_bar.configure(mode="determinate")
-        
-        download = yt_dl.AsyncDownload()
-        download.start()
-        
-        self.monitor_download(download)
+        if yt_dl.DOWNLOAD_LIST:
+            self.download_btn.configure(state="disabled")
+            self.current_dl.progress_bar.configure(mode="determinate")
+            self.current_dl.yt_title.configure(text="Starting download...")
+            
+            if not self.download_thread.is_alive():
+                download_thread = yt_dl.AsyncDownload()
+                download_thread.start()
+            
+            self.monitor_download(self.download_thread)
     
     def monitor_download(self, thread):
         if thread.is_alive():
             self.update_current_dl(thread.current_title, thread.count)
-            self.after(1, lambda: self.monitor_download(thread))
+            self.after(10, lambda: self.monitor_download(thread))
         else:
             self.download_btn.configure(state="normal")
             self.update_ended()
@@ -394,26 +438,26 @@ class DownloadListFrame(ctk.CTkFrame):
             total_items = len(self.download_list)
             
             # Update text and count
-            current_text.configure(text=f"{current_title}")
+            current_text.configure(text=f"{self.check_title_lenght(current_title)}")
             current_progress_text.configure(text=f"{complete_items} / {total_items}")
             
             # Update progress bar
             value = (complete_items/total_items)
+            self.completed += complete_items
             self.current_dl.progress_bar.set(value)
     
     def update_ended(self):
-        self.dl_list.configure(state="normal")
-        self.dl_list.delete('1.0', tk.END)
-        for title in self.download_list:
-            idx = self.download_list.index(title)
-            title_text = " [x] "+str(idx+1)+ "- " + title +"\n"
-            # Write in the dl_list the song
-            self.dl_list.insert(f"{idx+1}.0", title_text)
-            
-        self.dl_list.configure(state="disabled")
+        for items in self.download_items:
+            items.state.configure(text="DOWNLOADED")
+        self.current_dl.yt_title.configure(text="Download completed !")
+        self.current_dl.progress_bar.set(0)
         self.current_dl.progress_count.configure(text="")
-        self.current_dl.progress_bar.set(1)
-        self.current_dl.yt_title.configure(text="DOWNLOAD COMPLETED")
+        self.download_list.clear()
+    
+    def check_title_lenght(self, title: str):
+        if len(title) > 50:
+            return title[:50] + "..."
+        return title
         
 
 class SettingsFrame(ctk.CTkFrame):
@@ -436,7 +480,8 @@ class SettingsFrame(ctk.CTkFrame):
             corner_radius=0,
             image=setting_icon,
             compound=tk.LEFT,
-            width=20
+            width=20,
+            height=24
         )
         self.setting_button.configure(command=self.master.on_open_settings)
         self.setting_button.pack(side=tk.RIGHT, padx=(0, 10), pady=(1,4))
@@ -445,8 +490,8 @@ class App(ctk.CTk):
     """
     Main application interface
     """
-    WIDTH = 600
-    HEIGHT = 540
+    WIDTH = 640
+    HEIGHT = 570
     
     output_format = "mp3"
     output_dir = str(Path.home())+"\download\\"
@@ -463,7 +508,8 @@ class App(ctk.CTk):
         self.protocol(
             "WM_DELETE_WINDOW", self.on_closing
         )
-        self.iconbitmap(os.path.abspath("static\img\lunar_lotus_logo.ico"))
+        logo_image = tk.PhotoImage(master=self, file=os.path.abspath("static/img/lunar_lotus_logo.png"))
+        self.iconphoto(False, logo_image)
                 
         # init options windows
         self.output_window = OutputTopLevel(self)
@@ -475,19 +521,19 @@ class App(ctk.CTk):
         
         # ============ LOGO FRAME ========== #
         self.logo_frame = LogoFrame(master=self)
-        self.logo_frame.grid(row=0, column=0, sticky="we")
+        self.logo_frame.pack(fill=tk.X)
         
         # ============ TOP FRAME =========== #
         self.url_frame = URLEntryFrame(master=self, corner_radius=0)
-        self.url_frame.grid(row=1, column=0, sticky="we")
+        self.url_frame.pack(fill=tk.X)
         
         # ============ URLs display FRAME =========== #
         self.dl_frame = DownloadListFrame(master=self, corner_radius=0)
-        self.dl_frame.grid(row=2, column=0, sticky="we")
+        self.dl_frame.pack(fill=tk.X)
         
         # ============ BOTTOM FRAME =========== #
         self.bot_frame = SettingsFrame(master=self, corner_radius=0)
-        self.bot_frame.grid(row=3, column=0, pady=2, sticky="we")
+        self.bot_frame.pack(pady=2, fill=tk.X)
 
     
     def on_open_settings(self):
@@ -498,6 +544,7 @@ class App(ctk.CTk):
                 self.output_window.dark_mode.deselect()
             else:
                 self.output_window.dark_mode.select()
+        self.output_window.format_menu.set(self.output_format)
 
     def init_settings(self):
         with open(os.path.abspath('config.json')) as f:
@@ -521,4 +568,11 @@ class App(ctk.CTk):
             json.dump(data, f)
     
     def on_closing(self, event=0):
-        self.destroy()
+        downloading = self.dl_frame.download_thread
+        if downloading.status == yt_dl.DOWNLOADING:
+            messagequit = tk.messagebox.askyesno("Quit ?", "Download still running, do you want to quit ?", icon="warning")
+            if messagequit:
+                downloading.stop()
+                self.destroy()
+        else:
+            self.destroy()
