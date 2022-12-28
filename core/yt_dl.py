@@ -2,10 +2,17 @@ from __future__ import unicode_literals
 from threading import Thread, Event
 from enum import Enum
 
+import sys
+import logging
 import os
 import yt_dlp as yt
 import json
 
+debug_logger = logging.getLogger('debug')
+debug_logger.write = debug_logger.debug    #consider all prints as debug information
+debug_logger.flush = lambda: None   # this may be called when printing
+#debug_logger.setLevel(logging.DEBUG)      #activate debug logger output
+sys.stdout = debug_logger
 
 DOWNLOAD_LIST = [] # urls in waiting list for download
 COMPLETED_LIST = [] # urls of already downloaded songs
@@ -186,7 +193,6 @@ class AsyncDownload(Thread):
             if song not in COMPLETED_LIST:
                 self.status = DOWNLOADING
                 if self._stop_event.is_set():
-                    print("here")
                     self.status = COMPLETED
                     break 
                 else:
@@ -206,8 +212,6 @@ class AsyncDownload(Thread):
 
 
     def download_hook(self, d):
-        if d["status"] == "downloading":
-            pass
         if d["status"] == "finished":
             self.status = COMPLETED
     
