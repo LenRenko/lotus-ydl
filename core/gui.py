@@ -21,7 +21,7 @@ class OutputTopLevel(ctk.CTkToplevel):
         self.protocol(
             "WM_DELETE_WINDOW", self.on_closing
         )
-        self.iconphoto(False, tk.PhotoImage(master=self, file=os.path.abspath('static/img/lunar_lotus_logo.png')))
+        self.iconphoto(False, tk.PhotoImage(master=self, file=os.path.abspath('static/img/exe_icon.png')))
         
         # ============ Main frame =========== #
         self.setting_frame = ctk.CTkFrame(
@@ -128,7 +128,7 @@ class ConfirmTopLevel(ctk.CTkToplevel):
         self.protocol(
             "WM_DELETE_WINDOW", self.on_closing
         )
-        self.iconphoto(False, tk.PhotoImage(master=self,file=os.path.abspath("static/img/lunar_lotus_logo.png")))
+        self.iconphoto(False, tk.PhotoImage(master=self,file=os.path.abspath("static/img/exe_icon.png")))
     
         # confirm text
         self.txt_label = ctk.CTkLabel(master=self, text="This file is part of a playlist. \n Do you want to add all the playlist to download ? \n \n This can take a moment depending on playlist length", font=('Helvetica', 12, 'bold'))
@@ -508,7 +508,7 @@ class App(ctk.CTk):
         self.protocol(
             "WM_DELETE_WINDOW", self.on_closing
         )
-        logo_image = tk.PhotoImage(master=self, file=os.path.abspath("static/img/lunar_lotus_logo.png"))
+        logo_image = tk.PhotoImage(master=self, file=os.path.abspath("static/img/exe_icon.png"))
         self.iconphoto(False, logo_image)
                 
         # init options windows
