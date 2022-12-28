@@ -39,12 +39,16 @@ This is a simple Youtube Downloader GUI application build in python with tkinter
   </p>
 </div>
 
-### Where to get the .exe file ? 
+## Get the installer
+### Simply go to the website [LL Youtube Downloader](http://yt-dl.lunar-lotus.com/) and click on "Download"
+
+---
+#### Where to get the .exe file ? 
 - You can get the exe file [here](https://github.com/LenRenko/lotus-ydl/releases) or click on release on the right
 - Extract the archive (with [winrar](https://www.win-rar.com/start.html?L=10) or [7zip](https://www.7-zip.org/download.html)) where you want on your computer
 - Go to the folder LLYTDownloader and look for the `LLYTDownloader.exe`
 
-### How to use it ?
+#### How to use it ?
 - Go to youtube and copy the url of your favorite song or video
 - Launch with `LLYTDownloader.exe`
 - Follow the instructions on your screen :-> Paste your url on the entry, press ENTER or click add to add your url to download list
@@ -55,7 +59,7 @@ This is a simple Youtube Downloader GUI application build in python with tkinter
 - To open settings window, click on the gear button on the bottom right and chose desired options
 
 ---
-### How to use with Python ?
+#### How to use with Python ?
 - Download ffmpeg binaries from [Btbn](https://github.com/BtbN/FFmpeg-Builds/releases) for your OS
 - Extract the folder and rename it `ffmpeg`
 - Clone this repo to your computer or download [source code](https://github.com/LenRenko/lotus-ydl/archive/refs/tags/V1.0.0.zip) and extract it where you want
