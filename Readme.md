@@ -40,7 +40,7 @@ This is a simple Youtube Downloader GUI application build in python with tkinter
 </div>
 
 ## Get the installer
-### Simply go to the website [LL Youtube Downloader](http://yt-dl.lunar-lotus.com/) and click on "Download"
+### Simply go to the website [LL Youtube Downloader](https://yt-dl.lunar-lotus.com/) and click on "Download"
 
 ---
 #### Where to get the .exe file ? 
